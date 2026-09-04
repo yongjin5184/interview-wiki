@@ -2,6 +2,7 @@
 
 ## 2026-09-04
 
+* **Structure**: GitHub Pages 배포 파이프라인 추가 — .github/workflows/pages.yml (main push 시 빌드·배포), .github/scripts/build_site.py (모든 .md → .html 변환, 루트 절대 링크에 base 접두 + .md→.html 재작성, 그 외 파일 복사), .gitignore(_site/, 임시 스크린샷). CLAUDE.md 8절을 public repo 전제로 개정(사용자 결정), 5절에 빌드 링크 재작성 규칙 명시
 * **Capture**: /wiki/assets/inventory-system/ — ELI5 HTML 렌더링 스냅샷 3장 추가 (scene-12-full-architecture.png, scene-13-alt-architecture.png, eli5-inventory-system-full.png). GitHub이 HTML을 렌더링하지 않아 /wiki/system-design/inventory-system.md 상단에 이미지로 삽입. HTML 수정 시 같은 작업에서 재캡처
 * **Update**: /wiki/assets/inventory-system/eli5-inventory-system.html — 장면 13 "대안 그림" 추가: 국내 커머스 공개 사례(Redis 선차감 → Kafka → DB write-behind)를 장면 12와 같은 스타일로 그림, 화살표 7개 번호표와 약점 4곳(A~D) 표식·설명, 장면 12와의 방향 차이 정리. 회사명·내부 식별자 제외
 * **Update**: /wiki/assets/inventory-system/eli5-inventory-system.html 및 /wiki/system-design/inventory-system.md — 완성 그림 보강: 입고·조정(WMS) 박스와 RECEIVE/ADJUST 화살표 추가, reserve 라벨을 reserve/confirm/release(멱등키)로 확장, DB 박스에 sku_id shard·(sku, fc) 풀 표기, hot SKU 박스를 확장 레인(hot SKU·FC 할당·파티션 이벤트 원장)으로 일반화. 화살표 번호 12개로 재정렬, 4절 ASCII·대응 표·5단계 문구 동기화

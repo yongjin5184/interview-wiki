@@ -1,0 +1,6 @@
+# Pages 빌드 산출물
+_site/
+
+# 로컬 렌더링 확인용 임시 파일
+.playwright-mcp/
+/*.png
