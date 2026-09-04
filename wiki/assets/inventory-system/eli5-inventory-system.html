@@ -73,6 +73,11 @@
   .arrows { margin:14px 0 4px; padding-left:24px; font-size:14px; line-height:1.75; }
   .arrows li { margin:6px 0; }
   .arrows li::marker { color:var(--orange); font-weight:900; }
+  svg .warn circle { fill:var(--red); stroke:#fff; stroke-width:2; }
+  svg .warn text { fill:#fff; font-size:11px; font-weight:900; text-anchor:middle; }
+  .weak { margin:10px 0 4px; padding-left:24px; font-size:14px; line-height:1.75; list-style:none; }
+  .weak li { margin:6px 0; position:relative; }
+  .weak li b:first-child { display:inline-grid; place-items:center; width:20px; height:20px; margin-right:6px; border-radius:50%; background:var(--red); color:#fff; font-size:11px; }
   .practice { margin:18px 0 0; padding:18px; border:3px dashed #b9bec9; border-radius:16px; background:#fcfcfd; }
   .practice ol { margin:0; padding-left:26px; }
   .practice li { margin:8px 0; }
@@ -91,7 +96,7 @@
 <header>
   <div class="emoji">📦🏪</div>
   <h1>재고 시스템 설계, 5살처럼 시작하기</h1>
-  <p>문제 한 줄에서 질문을 꺼내고, 질문의 답을 박스와 화살표로 바꾸는 12장</p>
+  <p>문제 한 줄에서 질문을 꺼내고, 질문의 답을 박스와 화살표로 바꾸는 12장 + 비교용 대안 그림 1장</p>
 </header>
 
 <section class="scene">
@@ -339,6 +344,76 @@
   </div>
   <p class="caption">백지에서 이 순서로 세 번 그리면, 완성 그림을 외우지 않아도 다시 만들 수 있어요.</p>
   <div class="grownup"><b>면접 답변 순서:</b> 요구사항 질문 → 불변식 → 최소 write path → read cache → outbox/eventual consistency → 장애와 대사 → 측정된 병목의 확장. 각 화살표에는 기술 이름보다 <b>무슨 동작을 하고 어떤 보장을 주는지</b>를 적는다.</div>
+</section>
+
+<section class="scene" id="alt-architecture">
+  <span class="step">장면 13 · 대안 그림</span>
+  <h2>전광판이 심판까지 맡으면 어떻게 될까</h2>
+  <p class="oneliner">국내 커머스에서 실제 운영된 구조. 부품은 장면 12와 같지만 화살표 방향이 반대예요.</p>
+  <svg viewBox="0 0 860 470" role="img" aria-label="사용자, 재고 서버, Redis, Kafka, 동기화 서버, 메인 DB, 결제로 구성된 Redis 선차감 후 DB 사후 반영 구조">
+    <defs>
+      <marker id="a-red" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#d74c4c"/></marker>
+    </defs>
+    <rect x="20" y="45" width="130" height="74" rx="14" fill="#fff7df" stroke="#f4bd32" stroke-width="3"/><text x="85" y="77" font-size="25" text-anchor="middle">🛒</text><text x="85" y="103" font-size="14" font-weight="800" text-anchor="middle">사용자 주문·취소</text>
+    <rect x="215" y="35" width="170" height="94" rx="14" fill="#e8f7f0" stroke="#249b6b" stroke-width="3"/><text x="300" y="66" font-size="22" text-anchor="middle">🧮</text><text x="300" y="92" font-size="14" font-weight="800" text-anchor="middle">재고 서버 (WAS)</text><text x="300" y="112" font-size="11" fill="#70788a" text-anchor="middle">Redis만 보고 차감 · 없으면 에러</text>
+    <rect x="450" y="20" width="200" height="124" rx="14" fill="#ffeded" stroke="#d74c4c" stroke-width="4"/><text x="550" y="50" font-size="22" text-anchor="middle">⚡</text><text x="550" y="75" font-size="14" font-weight="900" text-anchor="middle">Redis = 심판</text><text x="550" y="95" font-size="11" fill="#70788a" text-anchor="middle">딜 풀 → 상품 풀 순서로 Lua 차감</text><text x="550" y="111" font-size="11" fill="#70788a" text-anchor="middle">판매수량 +a · 재고수량 −a</text><text x="550" y="130" font-size="11" fill="#b53c20" font-weight="800" text-anchor="middle">Sentinel 1 · master 1 · replica 2</text>
+    <rect x="215" y="195" width="170" height="82" rx="14" fill="#f0eaff" stroke="#8a61d8" stroke-width="3"/><text x="300" y="228" font-size="21" text-anchor="middle">📮</text><text x="300" y="253" font-size="14" font-weight="800" text-anchor="middle">Kafka</text><text x="300" y="270" font-size="11" fill="#70788a" text-anchor="middle">key = 재고번호 (순서 보장)</text>
+    <rect x="215" y="345" width="170" height="82" rx="14" fill="#f0eaff" stroke="#8a61d8" stroke-width="3"/><text x="300" y="378" font-size="21" text-anchor="middle">🔄</text><text x="300" y="403" font-size="14" font-weight="800" text-anchor="middle">동기화 서버 (consumer)</text><text x="300" y="420" font-size="11" fill="#70788a" text-anchor="middle">검사 없이 UPDATE만</text>
+    <rect x="470" y="335" width="180" height="100" rx="14" fill="#e9efff" stroke="#4a78e8" stroke-width="3"/><text x="560" y="366" font-size="22" text-anchor="middle">📒</text><text x="560" y="390" font-size="14" font-weight="800" text-anchor="middle">메인 DB 재고 테이블</text><text x="560" y="408" font-size="11" fill="#70788a" text-anchor="middle">판매수량 · 재고수량 · 0이면 품절 코드</text><text x="560" y="424" font-size="11" fill="#2857bd" font-weight="800" text-anchor="middle">사후 반영 장부 (write-behind)</text>
+    <rect x="20" y="195" width="130" height="74" rx="14" fill="#fff7df" stroke="#f4bd32" stroke-width="3"/><text x="85" y="227" font-size="25" text-anchor="middle">💳</text><text x="85" y="253" font-size="14" font-weight="800" text-anchor="middle">결제 (PG)</text>
+
+    <g fill="none" stroke-width="3">
+      <path d="M150 82 L207 82" stroke="#249b6b" marker-end="url(#a-green)"/>
+      <path d="M385 70 L442 70" stroke="#d74c4c" marker-end="url(#a-red)"/>
+      <path d="M300 129 L300 187" stroke="#8a61d8" marker-end="url(#a-purple)"/>
+      <path d="M300 277 L300 337" stroke="#8a61d8" marker-end="url(#a-purple)"/>
+      <path d="M385 386 L462 386" stroke="#4a78e8" marker-end="url(#a-blue)"/>
+      <path d="M530 335 C500 260 420 180 345 133" stroke="#4a78e8" stroke-dasharray="7 5" marker-end="url(#a-blue)"/>
+      <path d="M150 225 C180 210 190 150 212 112" stroke="#f36b45" stroke-dasharray="7 5" marker-end="url(#a-orange)"/>
+    </g>
+    <g font-size="10" font-weight="800">
+      <text x="178" y="70" fill="#249b6b" text-anchor="middle">PUT 차감·회수</text>
+      <text x="413" y="58" fill="#d74c4c" text-anchor="middle">Lua 검사+차감</text>
+      <text x="286" y="165" fill="#8a61d8" text-anchor="end">차감 성공 시 발행</text>
+      <text x="312" y="312" fill="#8a61d8">consume</text>
+      <text x="423" y="374" fill="#4a78e8" text-anchor="middle">UPDATE ±a</text>
+      <text x="485" y="228" fill="#4a78e8">최초 miss: DB 읽어 적재</text>
+      <text x="20" y="180" fill="#f36b45">오류 콜백 시에만 롤백</text>
+    </g>
+    <g class="badge">
+      <circle cx="178" cy="98" r="10"/><text x="178" y="102">1</text>
+      <circle cx="413" cy="86" r="10"/><text x="413" y="90">2</text>
+      <circle cx="314" cy="160" r="10"/><text x="314" y="164">3</text>
+      <circle cx="288" cy="310" r="10"/><text x="288" y="314">4</text>
+      <circle cx="423" cy="402" r="10"/><text x="423" y="406">5</text>
+      <circle cx="445" cy="245" r="10"/><text x="445" y="249">6</text>
+      <circle cx="140" cy="180" r="10"/><text x="140" y="184">7</text>
+    </g>
+    <g class="warn">
+      <circle cx="400" cy="118" r="10"/><text x="400" y="122">A</text>
+      <circle cx="662" cy="40" r="10"/><text x="662" y="44">B</text>
+      <circle cx="165" cy="250" r="10"/><text x="165" y="254">C</text>
+      <circle cx="662" cy="350" r="10"/><text x="662" y="354">D</text>
+    </g>
+  </svg>
+  <div class="legend"><span><i class="dot" style="background:#d74c4c"></i>Redis 판정</span><span><i class="dot" style="background:#8a61d8"></i>이벤트</span><span><i class="dot" style="background:#4a78e8"></i>DB 반영·적재</span><span><i class="dot" style="background:#f36b45"></i>롤백</span></div>
+  <ol class="arrows">
+    <li><b>PUT 차감·회수</b> — 주문이면 차감, 취소면 회수를 같은 API로 요청한다. 일반·직매입·추가구성·지점 상품을 각각 차감</li>
+    <li><b>Lua 검사+차감</b> — 재고 서버가 Redis에서 한정수량 딜 풀을 먼저, 없으면 상품 풀을 검사한다. 남으면 판매수량 +a·재고수량 −a, 부족하면 에러. <b>여기서 판매가 결정</b>된다</li>
+    <li><b>차감 성공 시 발행</b> — Redis 차감이 끝난 뒤에만 Kafka에 이벤트를 보낸다. key가 재고번호라 같은 재고는 한 파티션에서 순서대로 처리</li>
+    <li><b>consume</b> — 동기화 서버가 파티션 수만큼 붙어 이벤트를 읽는다</li>
+    <li><b>UPDATE ±a</b> — 재고 부족 검사는 이미 Redis가 했으므로 조건 없이 UPDATE만 한다. 재고가 0이면 품절 상태 코드로 바꾼다</li>
+    <li><b>최초 miss 적재</b> — Redis에 키가 없을 때만 DB에서 읽어 올린다. 평소 DB는 읽히지 않아 부하가 낮다</li>
+    <li><b>롤백</b> — 결제 오류 콜백이 오면 트랜잭션 ID로 회수 API를 불러 Redis에 되돌리고, 같은 경로로 DB에도 반영된다</li>
+  </ol>
+  <ul class="weak">
+    <li><b>A</b> ② 차감 뒤 ③ 발행 전에 재고 서버가 죽으면 Redis만 줄고 DB는 그대로다. 두 저장소를 한 트랜잭션으로 묶는 장치(outbox)가 없다</li>
+    <li><b>B</b> 복제가 비동기라 master가 죽으면 응답까지 끝난 차감이 사라진 replica가 승격된다. 그 순간부터 같은 수량을 두 번 판다. Sentinel 1대는 감시자 자체가 단일 장애점</li>
+    <li><b>C</b> 롤백은 오류 콜백이 올 때만 동작한다. 결제창을 닫고 떠난 사용자의 재고를 누가 회수하는지 그림에 없다(만료 워커 부재)</li>
+    <li><b>D</b> DB는 뒤따라 적는 장부라서 Redis와 어긋나는 것이 정상 상태인데, 어느 쪽이 맞는지 맞춰보는 대사 절차가 없다</li>
+  </ul>
+  <p class="caption">전광판이 심판까지 맡으면 빠르지만, 전광판이 꺼졌을 때 누가 맞는지 증명할 수 없어요.</p>
+  <div class="grownup"><b>장면 12와의 관계:</b> Redis Lua 차감·Kafka 키 순서·cache-aside 적재는 장면 12에도 그대로 있다. 다른 것은 <b>방향</b>이다. 이 그림은 Redis → Kafka → DB(write-behind)이고, 장면 12는 DB → outbox → Kafka → Redis(read model)다. 장면 12는 이 구조를 버린 게 아니라 ②의 Lua 차감을 Inventory Command 앞의 <b>admission control</b>로 한 단계 안에 넣고, 최종 판정과 이벤트 발행만 DB 트랜잭션 하나로 옮긴 것이다. 짧은 이벤트 판매에는 이 그림이, 초과 판매를 증명해야 하는 상시 재고에는 장면 12가 맞다.</div>
 </section>
 
 <footer>ELI5 · 상품 재고 시스템 — 문제 한 줄에서 L6 아키텍처까지</footer>
