@@ -6,3 +6,4 @@
 * **Creation**: /wiki/system-design/ticket-booking.md — 선착순 티켓 예매 시스템 설계 (Claude 세션 문답 정리)
 * **Creation**: /wiki/concepts/redis-expiration.md — Redis TTL 내부 구조·keyspace notification 함정
 * **Creation**: /wiki/assets/ticket-booking/eli5-ticket-system.html — ELI5 시각화 13장면
+* **Structure**: .gitattributes 추가 — index.md/log.md union 머지 (협업 대비 동시 편집 충돌 제거)

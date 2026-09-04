@@ -1,0 +1,4 @@
+# 동시 편집 충돌 제거: 예약 파일은 union 머지 — 양쪽의 추가 라인을 충돌 마커 없이 모두 보존
+# 머지/rebase 직후 중복 항목·날짜 역순 흐트러짐을 확인해 정돈할 것 (CLAUDE.md §6)
+log.md   merge=union
+index.md merge=union
