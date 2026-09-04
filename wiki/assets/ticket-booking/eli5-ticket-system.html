@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELI5 · 선착순 티켓 예매 시스템</title>
+<style>
+  :root {
+    --ink: #1e2430;
+    --paper: #faf7f0;
+    --card: #ffffff;
+    --accent: #ff6b4a;
+    --blue: #4a7dff;
+    --green: #2fb47c;
+    --yellow: #ffc93c;
+    --purple: #9b6bff;
+    --muted: #7a8194;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 40px 20px 80px; }
+  header { text-align: center; margin-bottom: 48px; }
+  header .emoji { font-size: 72px; }
+  h1 { font-size: 34px; margin: 8px 0 4px; }
+  header p { color: var(--muted); font-size: 17px; margin: 0; }
+
+  .scene {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 36px 32px;
+    margin-bottom: 36px;
+    box-shadow: 0 4px 24px rgba(30,36,48,.07);
+  }
+  .scene .step {
+    display: inline-block;
+    background: var(--ink);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    border-radius: 999px;
+    padding: 4px 14px;
+    margin-bottom: 12px;
+  }
+  .scene h2 { font-size: 26px; margin: 0 0 6px; }
+  .scene .oneliner { font-size: 18px; color: var(--muted); margin: 0 0 24px; }
+  .pic { width: 100%; display: block; margin: 0 auto 20px; }
+  .caption {
+    font-size: 19px;
+    text-align: center;
+    font-weight: 600;
+    margin: 0 0 20px;
+  }
+  .grownup {
+    background: #f2f4fa;
+    border-left: 4px solid var(--blue);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 15px;
+    color: #3d4456;
+  }
+  .grownup b { color: var(--blue); }
+  footer { text-align: center; color: var(--muted); font-size: 14px; margin-top: 40px; }
+  svg text { font-family: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="emoji">🎟️</div>
+  <h1>선착순 티켓 예매, 5살에게 설명하기</h1>
+  <p>10만 명이 달려오는데 티켓은 5만 장. 어떻게 안 싸우고 나눠줄까?</p>
+</header>
+
+<!-- SCENE 1: 문제 -->
+<div class="scene">
+  <span class="step">장면 1 · 문제</span>
+  <h2>문이 하나인데 10만 명이 달려와요</h2>
+  <p class="oneliner">한꺼번에 밀면 문이 부서지고, 같은 의자에 두 명이 앉아요.</p>
+  <svg class="pic" viewBox="0 0 800 260">
+    <!-- crowd -->
+    <g font-size="34">
+      <text x="20"  y="70">🏃</text><text x="70" y="110">🏃</text><text x="30" y="150">🏃</text>
+      <text x="90"  y="60">🏃</text><text x="120" y="140">🏃</text><text x="60" y="200">🏃</text>
+      <text x="140" y="90">🏃</text><text x="170" y="170">🏃</text><text x="110" y="220">🏃</text>
+      <text x="200" y="60">🏃</text><text x="220" y="130">🏃</text><text x="190" y="210">🏃</text>
+    </g>
+    <text x="130" y="35" font-size="18" font-weight="700" fill="#1e2430" text-anchor="middle">10만 명 😱</text>
+    <!-- arrows -->
+    <g stroke="#ff6b4a" stroke-width="5" stroke-linecap="round">
+      <line x1="270" y1="90" x2="360" y2="115"/>
+      <line x1="270" y1="140" x2="360" y2="135"/>
+      <line x1="270" y1="190" x2="360" y2="155"/>
+    </g>
+    <!-- tiny door -->
+    <rect x="380" y="60" width="90" height="150" rx="10" fill="#ffe3da" stroke="#ff6b4a" stroke-width="4"/>
+    <rect x="405" y="100" width="40" height="110" rx="6" fill="#ff6b4a"/>
+    <text x="425" y="45" font-size="16" font-weight="700" fill="#ff6b4a" text-anchor="middle">작은 문 하나</text>
+    <!-- seats -->
+    <g font-size="30">
+      <text x="530" y="100">💺</text><text x="580" y="100">💺</text><text x="630" y="100">💺</text><text x="680" y="100">💺</text>
+      <text x="530" y="150">💺</text><text x="580" y="150">💺</text><text x="630" y="150">💺</text><text x="680" y="150">💺</text>
+      <text x="530" y="200">💺</text><text x="580" y="200">💺</text><text x="630" y="200">💺</text><text x="680" y="200">💺</text>
+    </g>
+    <text x="615" y="45" font-size="18" font-weight="700" fill="#1e2430" text-anchor="middle">의자는 5만 개</text>
+  </svg>
+  <p class="caption">그냥 두면? 문이 무너지고 🧨 한 의자에 두 명 🙅</p>
+  <div class="grownup"><b>어른 버전:</b> 평소의 수백 배 스파이크 트래픽이 DB에 직행하면 커넥션 고갈로 전체 장애. 동시 요청이 같은 좌석을 잡는 race condition 발생.</div>
+</div>
+
+<!-- SCENE 2: 대기열 -->
+<div class="scene">
+  <span class="step">장면 2 · 대기열</span>
+  <h2>번호표를 나눠줘요</h2>
+  <p class="oneliner">놀이공원처럼 줄을 세우고, 내가 몇 번째인지 보여줘요.</p>
+  <svg class="pic" viewBox="0 0 800 240">
+    <!-- ticket machine -->
+    <rect x="40" y="70" width="120" height="130" rx="14" fill="#fff3cd" stroke="#ffc93c" stroke-width="4"/>
+    <text x="100" y="130" font-size="40" text-anchor="middle">🎫</text>
+    <text x="100" y="170" font-size="15" font-weight="700" text-anchor="middle">번호표 기계</text>
+    <text x="100" y="50" font-size="15" fill="#7a8194" text-anchor="middle">먼저 온 순서대로</text>
+    <!-- queue -->
+    <g font-size="34">
+      <text x="220" y="150">🧍</text><text x="290" y="150">🧍</text><text x="360" y="150">🧍</text>
+      <text x="430" y="150">🧍</text><text x="500" y="150">🧍</text>
+    </g>
+    <g font-size="14" font-weight="700" fill="#4a7dff" text-anchor="middle">
+      <text x="238" y="180">1번</text><text x="308" y="180">2번</text><text x="378" y="180">3번</text>
+      <text x="448" y="180">4번</text><text x="518" y="180">5번</text>
+    </g>
+    <!-- status board -->
+    <rect x="590" y="60" width="180" height="120" rx="14" fill="#1e2430"/>
+    <text x="680" y="105" font-size="17" fill="#ffc93c" text-anchor="middle" font-weight="700">내 순서</text>
+    <text x="680" y="150" font-size="30" fill="#ffffff" text-anchor="middle" font-weight="800">3,482번째</text>
+    <text x="680" y="205" font-size="14" fill="#7a8194" text-anchor="middle">전광판이 계속 알려줘요</text>
+  </svg>
+  <p class="caption">한 번에 조금씩만 입장 🚪 나머지는 번호 보며 기다려요</p>
+  <div class="grownup"><b>어른 버전:</b> 대기열 서버(가상 대기실). Redis Sorted Set에 <code>(userId, 입장시각)</code>을 넣고 <code>ZRANK</code>로 내 순번 조회. 뒤쪽 서버가 감당할 만큼만 토큰을 발급해 입장시키는 유입 제어(admission control).</div>
+</div>
+
+<!-- SCENE 3: 재고 차감 -->
+<div class="scene">
+  <span class="step">장면 3 · 중복 방지</span>
+  <h2>사탕 항아리는 한 손씩만</h2>
+  <p class="oneliner">항아리 지킴이가 한 번에 한 명씩만 사탕을 꺼내게 해요.</p>
+  <svg class="pic" viewBox="0 0 800 250">
+    <!-- two hands reaching -->
+    <text x="80" y="120" font-size="44">🫱</text>
+    <text x="80" y="200" font-size="44">🫱</text>
+    <text x="40" y="70" font-size="15" font-weight="700" fill="#7a8194">동시에 두 명이!</text>
+    <!-- guard -->
+    <rect x="270" y="50" width="160" height="170" rx="16" fill="#e8f7f0" stroke="#2fb47c" stroke-width="4"/>
+    <text x="350" y="130" font-size="48" text-anchor="middle">💂</text>
+    <text x="350" y="170" font-size="15" font-weight="700" text-anchor="middle">지킴이</text>
+    <text x="350" y="195" font-size="13" fill="#7a8194" text-anchor="middle">"한 명씩!"</text>
+    <!-- jar -->
+    <text x="540" y="150" font-size="70">🍬</text>
+    <text x="575" y="200" font-size="15" font-weight="700" fill="#1e2430" text-anchor="middle">사탕 5만 개</text>
+    <!-- counter -->
+    <rect x="660" y="70" width="110" height="100" rx="12" fill="#1e2430"/>
+    <text x="715" y="110" font-size="14" fill="#7a8194" text-anchor="middle">남은 개수</text>
+    <text x="715" y="148" font-size="26" fill="#2fb47c" text-anchor="middle" font-weight="800">49,999</text>
+    <!-- arrows -->
+    <g stroke="#2fb47c" stroke-width="4" stroke-linecap="round" fill="none">
+      <path d="M150 130 L 260 130" marker-end="none"/>
+      <path d="M440 130 L 505 130"/>
+    </g>
+  </svg>
+  <p class="caption">꺼낼 때마다 숫자를 하나 줄여요. 0이 되면 끝! 🚫</p>
+  <div class="grownup"><b>어른 버전:</b> 지킴이(💂)의 정체가 바로 <b>API 서버(WAS)</b>. WAS가 Redis <code>DECR</code>(또는 Lua 스크립트)로 선차감 후, 0 미만이면 즉시 거절. 좌석 지정이면 WAS가 DB에 <code>UPDATE seats SET status='HOLD' WHERE seat_id=? AND status='AVAILABLE'</code> 조건부 갱신 — 영향 행이 0이면 이미 팔린 것. 두 명이 동시에 와도 한 명만 성공. 항아리(Redis)와 공책(DB)은 도구일 뿐, 스스로 움직이지 않는다.</div>
+</div>
+
+<!-- SCENE 4: 결제 타임아웃 -->
+<div class="scene">
+  <span class="step">장면 4 · 결제 타임아웃</span>
+  <h2>모래시계가 다 떨어지면 자리 반납</h2>
+  <p class="oneliner">"10분 안에 돈 내세요. 안 내면 다음 사람 줄 거예요."</p>
+  <svg class="pic" viewBox="0 0 800 230">
+    <!-- person holding seat -->
+    <text x="60" y="130" font-size="50">🧍</text>
+    <text x="130" y="130" font-size="44">💺</text>
+    <text x="110" y="170" font-size="14" font-weight="700" fill="#7a8194" text-anchor="middle">자리 찜!</text>
+    <!-- hourglass -->
+    <text x="300" y="140" font-size="64">⏳</text>
+    <text x="335" y="185" font-size="16" font-weight="700" fill="#ff6b4a" text-anchor="middle">10분</text>
+    <!-- two outcomes -->
+    <g stroke="#7a8194" stroke-width="3" stroke-linecap="round">
+      <line x1="410" y1="80" x2="490" y2="55"/>
+      <line x1="410" y1="150" x2="490" y2="175"/>
+    </g>
+    <text x="510" y="65" font-size="36">💳✅</text>
+    <text x="640" y="65" font-size="16" font-weight="700" fill="#2fb47c">돈 냈어요 → 내 자리 확정!</text>
+    <text x="510" y="190" font-size="36">😴❌</text>
+    <text x="640" y="190" font-size="16" font-weight="700" fill="#ff6b4a">잠들었어요 → 자리 반납</text>
+  </svg>
+  <p class="caption">반납된 의자는 다시 사탕 항아리로 쏙 🔄</p>
+  <div class="grownup"><b>어른 버전:</b> 좌석을 <code>HOLD</code> 상태 + 만료시각으로 잡아두고, 결제 완료 시 <code>CONFIRMED</code>로 전이. 만료 처리는 Redis 키 TTL 만료 이벤트나 지연 큐(delay queue)로 트리거하되, 이벤트 유실 대비 만료시각 기준 배치 스캔을 안전망으로 병행. 재고는 다시 +1.</div>
+</div>
+
+<!-- SCENE 5: 데이터 유실 방지 -->
+<div class="scene">
+  <span class="step">장면 5 · 잃어버리지 않기</span>
+  <h2>공책에 적고, 복사본도 만들어요</h2>
+  <p class="oneliner">지킴이가 넘어져도, 공책만 있으면 누가 예약했는지 다 알아요.</p>
+  <svg class="pic" viewBox="0 0 800 230">
+    <!-- main notebook -->
+    <text x="90" y="130" font-size="64">📒</text>
+    <text x="125" y="180" font-size="15" font-weight="700" text-anchor="middle">원본 공책</text>
+    <text x="125" y="60" font-size="14" fill="#7a8194" text-anchor="middle">먼저 적고, 그다음 행동</text>
+    <!-- copy arrows -->
+    <g stroke="#9b6bff" stroke-width="4" stroke-linecap="round">
+      <line x1="200" y1="100" x2="300" y2="70"/>
+      <line x1="200" y1="130" x2="300" y2="160"/>
+    </g>
+    <!-- copies -->
+    <text x="320" y="90" font-size="48">📗</text>
+    <text x="320" y="195" font-size="48">📘</text>
+    <text x="440" y="80" font-size="15" font-weight="700" fill="#9b6bff">복사본 1 (다른 방에 보관)</text>
+    <text x="440" y="185" font-size="15" font-weight="700" fill="#9b6bff">복사본 2 (또 다른 방에)</text>
+    <!-- fallen guard -->
+    <text x="640" y="130" font-size="52">💂💥</text>
+    <text x="690" y="180" font-size="14" font-weight="700" fill="#7a8194" text-anchor="middle">지킴이가 넘어져도 OK</text>
+  </svg>
+  <p class="caption">적기 전엔 절대 "예약 완료!"라고 말하지 않아요 ✍️</p>
+  <div class="grownup"><b>어른 버전:</b> 확정 예약의 진실 원장(source of truth)은 RDB. WAL + 동기 복제(멀티 AZ)로 커밋된 데이터는 유실 없음. Redis는 속도용 캐시일 뿐, 죽으면 DB 기준으로 재구성. 결제 완료↔예약 확정은 멱등 처리로 이중 결제 방지.</div>
+</div>
+
+<!-- SCENE 6: 전체 그림 -->
+<div class="scene">
+  <span class="step">장면 6 · 한눈에 보기</span>
+  <h2>전체 그림</h2>
+  <p class="oneliner">가운데 지킴이(API 서버)가 모든 일을 해요. 항아리와 공책은 스스로 못 움직여요.</p>
+  <svg class="pic" viewBox="0 0 800 470">
+    <defs>
+      <marker id="arr" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#1e2430"/>
+      </marker>
+      <marker id="arrg" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#2fb47c"/>
+      </marker>
+    </defs>
+    <!-- users -->
+    <rect x="20" y="40" width="140" height="90" rx="14" fill="#ffe3da" stroke="#ff6b4a" stroke-width="3"/>
+    <text x="90" y="80" font-size="28" text-anchor="middle">🏃🏃🏃</text>
+    <text x="90" y="112" font-size="14" font-weight="700" text-anchor="middle">10만 명</text>
+    <!-- queue -->
+    <rect x="200" y="40" width="140" height="90" rx="14" fill="#fff3cd" stroke="#ffc93c" stroke-width="3"/>
+    <text x="270" y="80" font-size="28" text-anchor="middle">🎫🧍🧍</text>
+    <text x="270" y="112" font-size="14" font-weight="700" text-anchor="middle">대기열 (번호표)</text>
+    <!-- WAS -->
+    <rect x="380" y="30" width="180" height="110" rx="14" fill="#e8f7f0" stroke="#2fb47c" stroke-width="4"/>
+    <text x="470" y="75" font-size="30" text-anchor="middle">💂💂💂</text>
+    <text x="470" y="105" font-size="15" font-weight="800" text-anchor="middle">지킴이 = API 서버(WAS)</text>
+    <text x="470" y="125" font-size="12" fill="#7a8194" text-anchor="middle">일하는 건 전부 얘</text>
+    <!-- payment -->
+    <rect x="620" y="40" width="160" height="90" rx="14" fill="#efe8ff" stroke="#9b6bff" stroke-width="3"/>
+    <text x="700" y="80" font-size="28" text-anchor="middle">⏳💳</text>
+    <text x="700" y="112" font-size="14" font-weight="700" text-anchor="middle">결제 (외부 PG)</text>
+    <!-- Redis -->
+    <rect x="180" y="280" width="200" height="100" rx="14" fill="#fff3cd" stroke="#ffc93c" stroke-width="3"/>
+    <text x="280" y="322" font-size="28" text-anchor="middle">🍬🔢</text>
+    <text x="280" y="352" font-size="14" font-weight="700" text-anchor="middle">사탕 숫자판 (Redis)</text>
+    <text x="280" y="370" font-size="12" fill="#7a8194" text-anchor="middle">빠르지만 그냥 메모장</text>
+    <!-- DB -->
+    <rect x="500" y="280" width="200" height="100" rx="14" fill="#f2f4fa" stroke="#4a7dff" stroke-width="3"/>
+    <text x="600" y="322" font-size="28" text-anchor="middle">📒📗📘</text>
+    <text x="600" y="352" font-size="14" font-weight="700" text-anchor="middle">공책 (DB 원장)</text>
+    <text x="600" y="370" font-size="12" fill="#7a8194" text-anchor="middle">진짜 원본은 여기</text>
+    <!-- horizontal arrows -->
+    <g stroke="#1e2430" stroke-width="3" fill="none" marker-end="url(#arr)">
+      <line x1="160" y1="85" x2="192" y2="85"/>
+      <line x1="340" y1="85" x2="372" y2="85"/>
+      <line x1="560" y1="85" x2="612" y2="85"/>
+    </g>
+    <!-- WAS to Redis / DB (both directions handled by WAS) -->
+    <g stroke="#2fb47c" stroke-width="4" fill="none" marker-end="url(#arrg)">
+      <line x1="420" y1="140" x2="300" y2="272"/>
+      <line x1="520" y1="140" x2="590" y2="272"/>
+    </g>
+    <text x="320" y="205" font-size="13" font-weight="700" fill="#2fb47c">숫자 줄이기 (DECR)</text>
+    <text x="565" y="205" font-size="13" font-weight="700" fill="#2fb47c">공책에 적기 (INSERT)</text>
+    <!-- no direct link between Redis and DB -->
+    <line x1="380" y1="330" x2="500" y2="330" stroke="#ff6b4a" stroke-width="3" stroke-dasharray="8 6"/>
+    <text x="440" y="322" font-size="26" text-anchor="middle">❌</text>
+    <text x="440" y="410" font-size="14" font-weight="700" fill="#ff6b4a" text-anchor="middle">항아리와 공책은 서로 직접 대화하지 않아요 — 항상 지킴이(WAS)를 거쳐요</text>
+    <text x="400" y="450" font-size="16" font-weight="700" fill="#1e2430" text-anchor="middle">줄 세우기 🎫 → 지킴이가 숫자 줄이고 🍬 공책에 적고 📒 → 시간 재기 ⏳</text>
+  </svg>
+  <div class="grownup"><b>어른 버전 매핑:</b> 지킴이 = API 서버(WAS) 여러 대 — Redis와 DB를 호출하는 유일한 주체. 대기열 = 처리율 제한 + 메시지 큐 · 숫자판 = Redis 원자 연산 · 공책 = RDB(WAL, 동기 복제)가 source of truth · 모래시계 반납도 WAS 옆의 워커 프로세스가 수행. Redis↔DB 정합성(차감 후 DB 실패 시 <code>INCR</code> 복원 등)도 WAS의 책임.</div>
+</div>
+
+<!-- SCENE 7: Redis SET 물리 저장 -->
+<div class="scene">
+  <span class="step">장면 7 · Redis 속 들여다보기</span>
+  <h2>SET 하면 안에서 무슨 일이?</h2>
+  <p class="oneliner">이름표를 믹서기에 갈면 서랍 번호가 나오고, 알람은 다른 보드에 따로 붙여요.</p>
+  <svg class="pic" viewBox="0 0 800 560">
+    <defs>
+      <marker id="arr2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#1e2430"/>
+      </marker>
+    </defs>
+    <!-- command -->
+    <rect x="20" y="20" width="420" height="52" rx="10" fill="#1e2430"/>
+    <text x="230" y="52" font-size="16" fill="#7CFFB2" text-anchor="middle" font-family="monospace">SET hold:ticket:1  10245  NX EX 1800</text>
+    <text x="500" y="40" font-size="13" fill="#7a8194">키(이름표)</text>
+    <text x="500" y="58" font-size="13" fill="#7a8194">값(내용물) + 30분 알람</text>
+    <!-- hash mixer -->
+    <line x1="120" y1="72" x2="120" y2="110" stroke="#1e2430" stroke-width="3" marker-end="url(#arr2)"/>
+    <rect x="60" y="115" width="130" height="80" rx="14" fill="#fff3cd" stroke="#ffc93c" stroke-width="3"/>
+    <text x="125" y="152" font-size="30" text-anchor="middle">🌀</text>
+    <text x="125" y="182" font-size="13" font-weight="700" text-anchor="middle">해시 믹서기</text>
+    <text x="230" y="160" font-size="14" font-weight="700" fill="#b8860b">"이름을 갈면 → 3번 서랍!"</text>
+    <!-- main dict cabinet -->
+    <line x1="125" y1="195" x2="125" y2="235" stroke="#1e2430" stroke-width="3" marker-end="url(#arr2)"/>
+    <text x="40" y="262" font-size="15" font-weight="800">메인 서랍장 (값 보관)</text>
+    <g stroke="#4a7dff" stroke-width="2.5" fill="#f2f4fa">
+      <rect x="40"  y="275" width="80" height="55" rx="8"/>
+      <rect x="130" y="275" width="80" height="55" rx="8"/>
+      <rect x="220" y="275" width="80" height="55" rx="8"/>
+      <rect x="40"  y="340" width="80" height="55" rx="8"/>
+      <rect x="220" y="340" width="80" height="55" rx="8"/>
+    </g>
+    <!-- highlighted drawer #3 -->
+    <rect x="130" y="340" width="80" height="55" rx="8" fill="#e8f7f0" stroke="#2fb47c" stroke-width="4"/>
+    <text x="170" y="373" font-size="24" text-anchor="middle">📦</text>
+    <g font-size="12" fill="#7a8194" text-anchor="middle">
+      <text x="80" y="307">0번</text><text x="170" y="307">1번</text><text x="260" y="307">2번</text>
+      <text x="80" y="372">…</text><text x="260" y="372">…</text>
+    </g>
+    <text x="170" y="418" font-size="13" font-weight="700" fill="#2fb47c" text-anchor="middle">3번 서랍</text>
+    <!-- drawer contents zoom -->
+    <line x1="210" y1="367" x2="330" y2="367" stroke="#2fb47c" stroke-width="3" marker-end="url(#arr2)"/>
+    <rect x="340" y="330" width="230" height="90" rx="12" fill="#ffffff" stroke="#2fb47c" stroke-width="3"/>
+    <text x="455" y="360" font-size="14" text-anchor="middle" font-family="monospace">🏷️ hold:ticket:1</text>
+    <text x="455" y="390" font-size="14" text-anchor="middle" font-family="monospace">📦 10245 (userId)</text>
+    <text x="455" y="440" font-size="12" fill="#7a8194" text-anchor="middle">서랍 안 쪽지: 이름표 + 내용물만. 알람은 없음!</text>
+    <!-- expires board -->
+    <rect x="610" y="260" width="170" height="160" rx="14" fill="#ffe3da" stroke="#ff6b4a" stroke-width="3"/>
+    <text x="695" y="292" font-size="15" font-weight="800" text-anchor="middle">⏰ 알람 보드</text>
+    <text x="695" y="320" font-size="12" text-anchor="middle" font-family="monospace">hold:ticket:1</text>
+    <text x="695" y="345" font-size="13" font-weight="700" fill="#ff6b4a" text-anchor="middle">→ 18:30에 버려!</text>
+    <text x="695" y="375" font-size="12" fill="#7a8194" text-anchor="middle">(만료시각을 절대시간으로)</text>
+    <text x="695" y="400" font-size="12" fill="#7a8194" text-anchor="middle">따로 보관해요</text>
+    <!-- dashed link -->
+    <line x1="570" y1="360" x2="605" y2="345" stroke="#ff6b4a" stroke-width="2.5" stroke-dasharray="6 5"/>
+    <text x="620" y="240" font-size="13" font-weight="700" fill="#ff6b4a" text-anchor="middle">같은 이름표, 다른 보관함</text>
+    <!-- cleaners -->
+    <text x="60" y="490" font-size="34">🧹</text>
+    <text x="240" y="482" font-size="14" font-weight="700">청소부: 0.1초마다 알람 보드에서 몇 장 뽑아 검사, 지난 건 서랍째 버림</text>
+    <text x="60" y="535" font-size="34">🚪</text>
+    <text x="255" y="527" font-size="14" font-weight="700">문지기: 누가 서랍을 열 때 알람이 지났으면 그 자리에서 버림</text>
+    <!-- RAM note -->
+    <text x="690" y="500" font-size="30" text-anchor="middle">⚡🧠</text>
+    <text x="690" y="530" font-size="12" fill="#7a8194" text-anchor="middle">전부 책상 위(RAM)!</text>
+  </svg>
+  <p class="caption">값 서랍장과 알람 보드는 분리! 그래서 알람이 있어도 읽기는 똑같이 빨라요</p>
+  <div class="grownup"><b>어른 버전:</b> Redis DB 하나 = 거대한 해시테이블(<code>dict</code>). 키를 SipHash로 해싱해 버킷 인덱스를 얻고, <code>dictEntry</code>에 키(SDS 문자열)와 값 포인터를 저장. <code>10245</code>처럼 작은 숫자 값은 int 인코딩으로 압축 저장. <b>TTL은 값 옆이 아니라 별도의 <code>expires</code> dict</b>에 "키 → 만료 절대시각(unix ms)"으로 저장 — 그래서 GET 성능에 TTL 유무가 영향 없음. 삭제는 ① lazy(접근 시 시각 비교) ② active(주기적으로 expires에서 샘플 추출해 삭제) 두 방식. 이 "샘플링" 때문에 지난 장면의 expired 이벤트 시점이 부정확한 것. 메모리가 꽉 차면 rehash는 점진적(incremental)으로 진행. 디스크에는 RDB 스냅샷/AOF 로그로만 내려간다.</div>
+</div>
+
+<!-- SCENE 8: 전체 시스템 디자인 -->
+<div class="scene">
+  <span class="step">장면 8 · 최종 설계도</span>
+  <h2>전체 시스템 디자인</h2>
+  <p class="oneliner">지금까지 나온 조각을 전부 한 장에 모았어요. 번호 순서대로 따라가면 돼요.</p>
+  <svg class="pic" viewBox="0 0 900 640">
+    <defs>
+      <marker id="arr3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#1e2430"/>
+      </marker>
+      <marker id="arr3r" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#ff6b4a"/>
+      </marker>
+    </defs>
+
+    <!-- Client -->
+    <rect x="20" y="30" width="190" height="90" rx="14" fill="#ffe3da" stroke="#ff6b4a" stroke-width="3"/>
+    <text x="115" y="70" font-size="26" text-anchor="middle">🏃🏃🏃</text>
+    <text x="115" y="100" font-size="14" font-weight="700" text-anchor="middle">사용자 10만 (앱/웹)</text>
+
+    <!-- LB -->
+    <rect x="260" y="30" width="130" height="90" rx="14" fill="#f2f4fa" stroke="#7a8194" stroke-width="3"/>
+    <text x="325" y="70" font-size="26" text-anchor="middle">⚖️</text>
+    <text x="325" y="100" font-size="14" font-weight="700" text-anchor="middle">로드밸런서</text>
+
+    <!-- Queue API -->
+    <rect x="440" y="30" width="180" height="90" rx="14" fill="#fff3cd" stroke="#ffc93c" stroke-width="3"/>
+    <text x="530" y="68" font-size="26" text-anchor="middle">🎫</text>
+    <text x="530" y="96" font-size="14" font-weight="700" text-anchor="middle">대기열 API (WAS)</text>
+
+    <!-- Redis-Q -->
+    <rect x="680" y="20" width="200" height="110" rx="14" fill="#fff3cd" stroke="#ffc93c" stroke-width="4"/>
+    <text x="780" y="55" font-size="24" text-anchor="middle">⚡</text>
+    <text x="780" y="82" font-size="14" font-weight="800" text-anchor="middle">Redis-Q (대기열 전용)</text>
+    <text x="780" y="103" font-size="12" fill="#7a8194" text-anchor="middle">카운터 2개 · 영속화 없음</text>
+    <text x="780" y="120" font-size="12" fill="#7a8194" text-anchor="middle">레플리카로 읽기 분산</text>
+
+    <!-- 입장 워커 -->
+    <rect x="440" y="170" width="180" height="70" rx="14" fill="#f2f4fa" stroke="#7a8194" stroke-width="3"/>
+    <text x="530" y="200" font-size="20" text-anchor="middle">🚪</text>
+    <text x="530" y="225" font-size="13" font-weight="700" text-anchor="middle">입장 워커: N명씩 토큰 발급</text>
+
+    <!-- 예매 API -->
+    <rect x="440" y="300" width="180" height="100" rx="14" fill="#e8f7f0" stroke="#2fb47c" stroke-width="4"/>
+    <text x="530" y="340" font-size="26" text-anchor="middle">💂💂💂</text>
+    <text x="530" y="368" font-size="14" font-weight="800" text-anchor="middle">예매 API (WAS ×N)</text>
+    <text x="530" y="388" font-size="12" fill="#7a8194" text-anchor="middle">무상태 → 수평 확장</text>
+
+    <!-- PG -->
+    <rect x="20" y="470" width="190" height="90" rx="14" fill="#efe8ff" stroke="#9b6bff" stroke-width="3"/>
+    <text x="115" y="510" font-size="26" text-anchor="middle">💳</text>
+    <text x="115" y="540" font-size="14" font-weight="700" text-anchor="middle">외부 PG (결제)</text>
+
+    <!-- Redis-S -->
+    <rect x="680" y="290" width="200" height="110" rx="14" fill="#e8f7f0" stroke="#2fb47c" stroke-width="4"/>
+    <text x="780" y="325" font-size="24" text-anchor="middle">🍬</text>
+    <text x="780" y="352" font-size="14" font-weight="800" text-anchor="middle">Redis-S (재고·HOLD 전용)</text>
+    <text x="780" y="373" font-size="12" fill="#7a8194" text-anchor="middle">stock 카운터 · hold:* TTL</text>
+    <text x="780" y="390" font-size="12" fill="#7a8194" text-anchor="middle">AOF + 레플리카</text>
+
+    <!-- RDB -->
+    <rect x="680" y="470" width="200" height="110" rx="14" fill="#f2f4fa" stroke="#4a7dff" stroke-width="4"/>
+    <text x="780" y="505" font-size="24" text-anchor="middle">📒📗</text>
+    <text x="780" y="532" font-size="14" font-weight="800" text-anchor="middle">RDB 예약 원장</text>
+    <text x="780" y="553" font-size="12" fill="#7a8194" text-anchor="middle">source of truth</text>
+    <text x="780" y="570" font-size="12" fill="#7a8194" text-anchor="middle">Primary + 동기 복제(멀티 AZ)</text>
+
+    <!-- 만료 워커 -->
+    <rect x="440" y="470" width="180" height="110" rx="14" fill="#ffe3da" stroke="#ff6b4a" stroke-width="3"/>
+    <text x="530" y="505" font-size="22" text-anchor="middle">🧹⏰</text>
+    <text x="530" y="532" font-size="13" font-weight="700" text-anchor="middle">만료 워커</text>
+    <text x="530" y="552" font-size="11" fill="#7a8194" text-anchor="middle">expired 이벤트 구독(빠름)</text>
+    <text x="530" y="568" font-size="11" fill="#7a8194" text-anchor="middle">+ DB 만료시각 배치 스캔(안전망)</text>
+
+    <!-- arrows main flow -->
+    <g stroke="#1e2430" stroke-width="3" fill="none" marker-end="url(#arr3)">
+      <line x1="210" y1="75" x2="252" y2="75"/>
+      <line x1="390" y1="75" x2="432" y2="75"/>
+      <line x1="620" y1="75" x2="672" y2="75"/>
+      <line x1="620" y1="205" x2="760" y2="138"/>
+      <line x1="115" y1="120" x2="115" y2="350"/>
+      <line x1="115" y1="350" x2="432" y2="350"/>
+      <line x1="620" y1="330" x2="672" y2="330"/>
+      <line x1="620" y1="380" x2="700" y2="465"/>
+      <line x1="440" y1="380" x2="210" y2="490"/>
+    </g>
+    <!-- polling dashed -->
+    <line x1="440" y1="105" x2="215" y2="105" stroke="#7a8194" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#arr3)"/>
+    <!-- PG callback -->
+    <line x1="210" y1="500" x2="440" y2="395" stroke="#9b6bff" stroke-width="2.5" stroke-dasharray="7 5" marker-end="url(#arr3)"/>
+    <!-- expiry flows -->
+    <g stroke="#ff6b4a" stroke-width="2.5" stroke-dasharray="7 5" fill="none" marker-end="url(#arr3r)">
+      <line x1="700" y1="400" x2="600" y2="465"/>
+      <line x1="620" y1="540" x2="672" y2="540"/>
+      <line x1="560" y1="470" x2="700" y2="405"/>
+    </g>
+
+    <!-- numbers -->
+    <g font-size="16" font-weight="800" fill="#ff6b4a">
+      <text x="225" y="60">①</text>
+      <text x="640" y="60">①</text>
+      <text x="310" y="130">②</text>
+      <text x="655" y="175">③</text>
+      <text x="255" y="335">④</text>
+      <text x="640" y="320">⑤</text>
+      <text x="655" y="430">⑥</text>
+      <text x="290" y="425">⑦</text>
+      <text x="630" y="440">⑧</text>
+      <text x="628" y="525">⑧</text>
+    </g>
+  </svg>
+  <ol style="font-size:15px; line-height:1.9; margin:0 0 20px; padding-left:24px;">
+    <li><b>진입</b> — 대기열 API가 Redis-Q에 <code>INCR next_number</code>로 번호표 발급</li>
+    <li><b>순서 확인</b> — 폴링/SSE로 "내 번호 − serving_number" 응답 (WAS 로컬 캐시 1초)</li>
+    <li><b>입장</b> — 입장 워커가 <code>serving_number</code>를 N씩 올리고 입장 토큰(JWT) 발급</li>
+    <li><b>예매 요청</b> — 토큰 검증 후 예매 API 입장 (토큰 없으면 거절)</li>
+    <li><b>재고 선차감</b> — Redis-S에 <code>DECR stock</code> + <code>SET hold:ticket:{id} {userId} NX EX 1800</code></li>
+    <li><b>원장 기록</b> — RDB에 HOLD 상태 INSERT. 결제 성공 콜백이 오면 CONFIRMED로 갱신 + hold 키 DEL</li>
+    <li><b>결제</b> — 외부 PG 호출, 콜백은 멱등 처리 (같은 콜백 두 번 와도 안전)</li>
+    <li><b>자동 취소</b> — TTL 만료 → expired 이벤트(빠른 경로) + DB 배치 스캔(안전망) → HOLD 취소, 재고 +1</li>
+  </ol>
+  <div class="grownup"><b>장애 시나리오 요약:</b> WAS 죽음 → 무상태라 아무거나 재시작 · Redis-Q 죽음 → 대기열만 리셋, 예약 데이터 무관 · Redis-S 죽음 → AOF+레플리카로 승격, 최악에도 DB 원장 기준 재구성 · RDB Primary 죽음 → 동기 복제본 승격, 커밋된 예약 유실 없음. 확정 예약의 진실은 항상 RDB — 요구사항 5번(유실 방지)의 근거.</div>
+</div>
+
+<!-- SCENE 9: 상태 머신 -->
+<div class="scene">
+  <span class="step">장면 9 · 찜한 자리의 세 가지 결말</span>
+  <h2>쪽지는 찢지 않아요, 도장만 바꿔요</h2>
+  <p class="oneliner">찜(HOLD) 쪽지는 결말이 3개뿐이에요. 어떤 결말이든 쪽지는 공책에 남아요.</p>
+  <svg class="pic" viewBox="0 0 800 340">
+    <defs>
+      <marker id="arr9" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#1e2430"/>
+      </marker>
+    </defs>
+    <!-- HOLD note -->
+    <rect x="40" y="110" width="180" height="120" rx="14" fill="#fff3cd" stroke="#ffc93c" stroke-width="4"/>
+    <text x="130" y="155" font-size="34" text-anchor="middle">📝</text>
+    <text x="130" y="190" font-size="16" font-weight="800" text-anchor="middle">찜 쪽지 (HOLD)</text>
+    <text x="130" y="212" font-size="12" fill="#7a8194" text-anchor="middle">티켓1 · 유저10245 · 18:30까지</text>
+    <!-- arrows -->
+    <g stroke="#1e2430" stroke-width="3" fill="none" marker-end="url(#arr9)">
+      <line x1="220" y1="130" x2="420" y2="65"/>
+      <line x1="220" y1="170" x2="420" y2="170"/>
+      <line x1="220" y1="210" x2="420" y2="280"/>
+    </g>
+    <text x="300" y="80" font-size="14" font-weight="700" fill="#2fb47c">💳 30분 안에 돈 냈어요</text>
+    <text x="255" y="160" font-size="14" font-weight="700" fill="#4a7dff">🙋 "저 안 살래요"</text>
+    <text x="290" y="270" font-size="14" font-weight="700" fill="#ff6b4a">⏳ 30분 지나도록 잠잠</text>
+    <!-- outcomes -->
+    <rect x="430" y="25" width="330" height="80" rx="14" fill="#e8f7f0" stroke="#2fb47c" stroke-width="3"/>
+    <text x="470" y="75" font-size="30">✅</text>
+    <text x="530" y="60" font-size="16" font-weight="800" fill="#2fb47c">도장: 확정 (CONFIRMED)</text>
+    <text x="530" y="88" font-size="13" fill="#3d4456">내 자리! 공책에 영원히 보관</text>
+    <rect x="430" y="130" width="330" height="80" rx="14" fill="#f2f4fa" stroke="#4a7dff" stroke-width="3"/>
+    <text x="470" y="180" font-size="30">↩️</text>
+    <text x="530" y="165" font-size="16" font-weight="800" fill="#4a7dff">도장: 취소 (CANCELLED)</text>
+    <text x="530" y="193" font-size="13" fill="#3d4456">기다릴 필요 없이 사탕 바로 +1</text>
+    <rect x="430" y="235" width="330" height="80" rx="14" fill="#ffe3da" stroke="#ff6b4a" stroke-width="3"/>
+    <text x="470" y="285" font-size="30">⌛</text>
+    <text x="530" y="270" font-size="16" font-weight="800" fill="#ff6b4a">도장: 만료 (EXPIRED)</text>
+    <text x="530" y="298" font-size="13" fill="#3d4456">청소부(워커)가 도장 찍고 사탕 +1</text>
+  </svg>
+  <p class="caption">찢어버리면(DELETE) 나중에 "내 예약 왜 없어졌어요?"에 답을 못 해요 🙈</p>
+  <div class="grownup"><b>어른 버전:</b> HOLD 행은 DELETE가 아니라 상태 전이(UPDATE). 판매 가능 여부는 행의 존재가 아니라 상태값이 결정하므로 EXPIRED 행은 무해하고, 늦은 결제 콜백 판정("존재했지만 만료됨 → 환불")·CS·감사를 위해 반드시 남긴다. 물리 정리는 훗날 날짜 파티션 아카이빙으로.</div>
+</div>
+
+<!-- SCENE 10: 만료 시각 미리 적기 -->
+<div class="scene">
+  <span class="step">장면 10 · 버릴 시각 미리 적기</span>
+  <h2>한 번만 계산해서, 두 군데 똑같이 적어요</h2>
+  <p class="oneliner">"30분 뒤"라고 각자 계산하면 어긋나요. 지킴이가 "18:30"이라고 딱 정해서 나눠줘요.</p>
+  <svg class="pic" viewBox="0 0 800 300">
+    <defs>
+      <marker id="arr10" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#2fb47c"/>
+      </marker>
+    </defs>
+    <!-- WAS -->
+    <rect x="310" y="40" width="180" height="110" rx="14" fill="#e8f7f0" stroke="#2fb47c" stroke-width="4"/>
+    <text x="400" y="85" font-size="34" text-anchor="middle">💂🕐</text>
+    <text x="400" y="115" font-size="14" font-weight="800" text-anchor="middle">지킴이 (WAS)</text>
+    <text x="400" y="137" font-size="13" fill="#2fb47c" text-anchor="middle" font-weight="700">"지금+30분 = 18:30!"</text>
+    <!-- arrows to both stores -->
+    <g stroke="#2fb47c" stroke-width="4" fill="none" marker-end="url(#arr10)">
+      <line x1="310" y1="150" x2="210" y2="200"/>
+      <line x1="490" y1="150" x2="590" y2="200"/>
+    </g>
+    <!-- Redis alarm -->
+    <rect x="60" y="205" width="240" height="80" rx="14" fill="#ffe3da" stroke="#ff6b4a" stroke-width="3"/>
+    <text x="100" y="255" font-size="30">⏰</text>
+    <text x="200" y="240" font-size="14" font-weight="800">알람 보드 (Redis)</text>
+    <text x="200" y="268" font-size="13" font-family="monospace">EXAT 18:30</text>
+    <!-- DB column -->
+    <rect x="500" y="205" width="240" height="80" rx="14" fill="#f2f4fa" stroke="#4a7dff" stroke-width="3"/>
+    <text x="540" y="255" font-size="30">📒</text>
+    <text x="645" y="240" font-size="14" font-weight="800" text-anchor="middle">공책 컬럼 (DB)</text>
+    <text x="645" y="268" font-size="13" font-family="monospace" text-anchor="middle">hold_expires_at=18:30</text>
+    <!-- crossed out alternative -->
+    <text x="400" y="245" font-size="24" text-anchor="middle">🤝</text>
+    <text x="400" y="275" font-size="13" fill="#7a8194" text-anchor="middle">둘이 항상 같은 시각</text>
+  </svg>
+  <p class="caption">생성일에서 그때그때 계산 ❌ → 만료 시각을 값으로 박제 ⭕</p>
+  <div class="grownup"><b>어른 버전:</b> <code>created_at + 30분</code>을 매번 파생 계산하지 않고 <code>hold_expires_at</code> 컬럼에 절대시각으로 저장, Redis에는 같은 값을 <code>EXAT</code>로. 예약별 정책 차이(VIP 60분)·결제 진입 시 연장이 UPDATE 한 줄로 가능하고, "30분" 규칙이 생성 코드 한 곳에만 존재. 워커는 <code>(status, hold_expires_at)</code> 인덱스로 만료 행만 정확히 스캔.</div>
+</div>
+
+<!-- SCENE 11: 불일치 창 -->
+<div class="scene">
+  <span class="step">장면 11 · 몇 초쯤 달라도 괜찮아</span>
+  <h2>도장 먼저, 사탕은 나중에</h2>
+  <p class="oneliner">알람은 울렸는데 공책은 아직 그대로인 몇 초. 순서 하나로 사고를 막아요.</p>
+  <svg class="pic" viewBox="0 0 800 360">
+    <!-- timeline -->
+    <line x1="60" y1="90" x2="740" y2="90" stroke="#1e2430" stroke-width="3"/>
+    <g stroke="#1e2430" stroke-width="3">
+      <line x1="140" y1="78" x2="140" y2="102"/>
+      <line x1="500" y1="78" x2="500" y2="102"/>
+      <line x1="640" y1="78" x2="640" y2="102"/>
+    </g>
+    <!-- gap band -->
+    <rect x="140" y="76" width="360" height="28" fill="#ffe3da" opacity="0.6"/>
+    <text x="320" y="65" font-size="14" font-weight="700" fill="#ff6b4a" text-anchor="middle">몇 초의 어긋남 구간 (일부러 허용!)</text>
+    <text x="140" y="130" font-size="26" text-anchor="middle">⏰</text>
+    <text x="140" y="158" font-size="13" font-weight="700" text-anchor="middle">18:30:00</text>
+    <text x="140" y="176" font-size="12" fill="#7a8194" text-anchor="middle">Redis 알람 사라짐</text>
+    <text x="500" y="130" font-size="26" text-anchor="middle">📒</text>
+    <text x="500" y="158" font-size="13" font-weight="700" text-anchor="middle">18:30:40</text>
+    <text x="500" y="176" font-size="12" fill="#7a8194" text-anchor="middle">① 공책에 "만료" 도장</text>
+    <text x="640" y="130" font-size="26" text-anchor="middle">🍬</text>
+    <text x="640" y="158" font-size="13" font-weight="700" text-anchor="middle">직후</text>
+    <text x="640" y="176" font-size="12" fill="#7a8194" text-anchor="middle">② 그 다음에야 사탕 +1</text>
+    <!-- two checks -->
+    <rect x="60" y="210" width="330" height="120" rx="14" fill="#e8f7f0" stroke="#2fb47c" stroke-width="3"/>
+    <text x="100" y="260" font-size="30">🙅</text>
+    <text x="230" y="245" font-size="14" font-weight="800" text-anchor="middle">어긋난 사이에 새 손님이 오면?</text>
+    <text x="230" y="272" font-size="13" fill="#3d4456" text-anchor="middle">사탕이 아직 안 돌아와서 못 사요</text>
+    <text x="230" y="298" font-size="14" font-weight="800" fill="#2fb47c" text-anchor="middle">→ 중복 판매 절대 없음 ✅</text>
+    <rect x="410" y="210" width="330" height="120" rx="14" fill="#e8f7f0" stroke="#2fb47c" stroke-width="3"/>
+    <text x="450" y="260" font-size="30">💳</text>
+    <text x="580" y="245" font-size="14" font-weight="800" text-anchor="middle">어긋난 사이에 결제가 도착하면?</text>
+    <text x="580" y="272" font-size="13" fill="#3d4456" text-anchor="middle">공책이 아직 HOLD → 확정 성공!</text>
+    <text x="580" y="298" font-size="14" font-weight="800" fill="#2fb47c" text-anchor="middle">→ 아슬아슬 결제자에게 관대 ✅</text>
+  </svg>
+  <p class="caption">실수해도 언제나 "덜 파는 쪽"으로만 기울어요. 한 자리 두 명은 없어요 🛡️</p>
+  <div class="grownup"><b>어른 버전:</b> Redis·DB 이중 저장소의 수초 불일치는 의도된 결과적 일관성. 2PC 없이도 안전한 이유는 연산 순서 — 재고 복원(INCR)을 DB 조건부 전이(HOLD→EXPIRED) <b>성공 후</b>에만 수행. 순서를 뒤집으면 같은 티켓에 HOLD 2개가 생길 수 있어 금지. 최종 판정 권한은 항상 DB의 조건부 UPDATE 한 곳.</div>
+</div>
+
+<!-- SCENE 12: 빈자리 재판매 -->
+<div class="scene">
+  <span class="step">장면 12 · 빈자리가 다시 팔리는 길</span>
+  <h2>옛 쪽지는 그대로, 새 쪽지를 새로 써요</h2>
+  <p class="oneliner">만료로 풀린 자리는 "고쳐 쓰는" 게 아니라, 사탕이 항아리로 돌아오고 다음 사람이 새로 찜해요.</p>
+  <svg class="pic" viewBox="0 0 800 320">
+    <defs>
+      <marker id="arr12" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#1e2430"/>
+      </marker>
+    </defs>
+    <!-- old note -->
+    <rect x="30" y="60" width="180" height="110" rx="14" fill="#ffe3da" stroke="#ff6b4a" stroke-width="3"/>
+    <text x="120" y="105" font-size="30" text-anchor="middle">📝⌛</text>
+    <text x="120" y="135" font-size="14" font-weight="800" text-anchor="middle">옛 쪽지 (EXPIRED)</text>
+    <text x="120" y="156" font-size="12" fill="#7a8194" text-anchor="middle">공책에 기록으로 영구 보관</text>
+    <!-- worker + candy back -->
+    <text x="280" y="125" font-size="40">🧹</text>
+    <line x1="330" y1="115" x2="410" y2="115" stroke="#2fb47c" stroke-width="4" marker-end="url(#arr12)"/>
+    <text x="370" y="95" font-size="14" font-weight="700" fill="#2fb47c">사탕 +1</text>
+    <!-- jar -->
+    <text x="430" y="135" font-size="56">🍬</text>
+    <rect x="415" y="160" width="110" height="40" rx="8" fill="#1e2430"/>
+    <text x="470" y="186" font-size="16" fill="#2fb47c" text-anchor="middle" font-weight="800">0 → 1</text>
+    <!-- next buyer -->
+    <line x1="540" y1="115" x2="610" y2="115" stroke="#1e2430" stroke-width="3" marker-end="url(#arr12)"/>
+    <text x="640" y="128" font-size="40">🧍🎟️</text>
+    <text x="660" y="165" font-size="13" font-weight="700" text-anchor="middle">입장해 있던 다른 손님</text>
+    <text x="660" y="184" font-size="12" fill="#7a8194" text-anchor="middle">DECR 성공!</text>
+    <!-- new note -->
+    <rect x="560" y="215" width="200" height="85" rx="14" fill="#fff3cd" stroke="#ffc93c" stroke-width="3"/>
+    <text x="660" y="252" font-size="26" text-anchor="middle">📝✨</text>
+    <text x="660" y="282" font-size="14" font-weight="800" text-anchor="middle">완전히 새 쪽지 (새 HOLD 행)</text>
+    <line x1="660" y1="190" x2="660" y2="208" stroke="#1e2430" stroke-width="3" marker-end="url(#arr12)"/>
+    <text x="120" y="250" font-size="13" fill="#7a8194">좌석 지정제라면: 좌석 지도의 그 칸이</text>
+    <text x="120" y="272" font-size="13" fill="#7a8194">회색(HOLD) → 초록(AVAILABLE)으로 다시 켜져요</text>
+  </svg>
+  <p class="caption">"재예약"이란 없어요. 항상 새로운 예약이 태어날 뿐! 👶</p>
+  <div class="grownup"><b>어른 버전:</b> 만료 워커가 ① 옛 행을 EXPIRED로 전이 ② <code>INCR stock</code>(좌석제면 <code>seats.status → AVAILABLE</code>). 이후는 최초 판매와 완전히 동일한 경로 — 입장 토큰을 가진 다른 유저의 <code>DECR</code>+<code>SET NX</code>가 성공하고 새 reservations 행이 INSERT된다. 매진으로 대기열까지 닫힌 뒤의 취소표라면 대기열을 재오픈하거나 '취소표 알림' 구독자에게 입장 토큰을 발급하는 정책을 얹는다.</div>
+</div>
+
+<!-- SCENE 13: 대안 아키텍처 -->
+<div class="scene">
+  <span class="step">장면 13 · 대안 설계: 컨베이어 벨트</span>
+  <h2>카프카로 줄 세우면? 벨트 위 위치가 곧 순번</h2>
+  <p class="oneliner">모든 주문 편지를 벨트에 올리고, 일꾼이 한 통씩 처리해요. 내 편지 위치 − 처리 중 위치 = 내 순서!</p>
+  <svg class="pic" viewBox="0 0 800 360">
+    <defs>
+      <marker id="arr13" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+        <path d="M0,0 L9,3 L0,6 Z" fill="#1e2430"/>
+      </marker>
+    </defs>
+    <!-- belt -->
+    <rect x="120" y="110" width="560" height="70" rx="10" fill="#f2f4fa" stroke="#7a8194" stroke-width="3"/>
+    <g stroke="#7a8194" stroke-width="2">
+      <line x1="213" y1="110" x2="213" y2="180"/><line x1="306" y1="110" x2="306" y2="180"/>
+      <line x1="399" y1="110" x2="399" y2="180"/><line x1="492" y1="110" x2="492" y2="180"/>
+      <line x1="585" y1="110" x2="585" y2="180"/>
+    </g>
+    <g font-size="24" text-anchor="middle">
+      <text x="166" y="152">✉️</text><text x="259" y="152">✉️</text><text x="352" y="152">✉️</text>
+      <text x="445" y="152">💌</text><text x="538" y="152">✉️</text><text x="632" y="152">✉️</text>
+    </g>
+    <g font-size="12" fill="#7a8194" text-anchor="middle">
+      <text x="166" y="200">#100</text><text x="259" y="200">#101</text><text x="352" y="200">#102</text>
+      <text x="445" y="200">#103</text><text x="538" y="200">#104</text><text x="632" y="200">#105</text>
+    </g>
+    <text x="445" y="95" font-size="14" font-weight="800" fill="#9b6bff" text-anchor="middle">💌 내 편지 = #103</text>
+    <text x="400" y="40" font-size="15" font-weight="800" text-anchor="middle">컨베이어 벨트 (Kafka 로그 — 편지는 디스크에 남아 안 사라져요)</text>
+    <!-- consumer -->
+    <text x="60" y="155" font-size="42">💂</text>
+    <line x1="120" y1="145" x2="105" y2="145" stroke="#1e2430" stroke-width="3" marker-end="url(#arr13)"/>
+    <text x="62" y="205" font-size="13" font-weight="700" text-anchor="middle">일꾼 1명</text>
+    <text x="62" y="223" font-size="12" fill="#7a8194" text-anchor="middle">지금 #100 처리 중</text>
+    <!-- producer -->
+    <text x="730" y="155" font-size="36">🧍📮</text>
+    <text x="742" y="205" font-size="12" fill="#7a8194" text-anchor="middle">새 주문 투입</text>
+    <!-- rank formula -->
+    <rect x="200" y="245" width="400" height="55" rx="12" fill="#1e2430"/>
+    <text x="400" y="280" font-size="17" fill="#ffc93c" text-anchor="middle" font-weight="800">내 순서 = #103 − #100 = 3번째 앞!</text>
+    <!-- async note -->
+    <text x="400" y="335" font-size="14" fill="#7a8194" text-anchor="middle">결과는 내 차례가 되면 📬 알림으로 와요 (기다리는 동안 화면엔 순번만)</text>
+  </svg>
+  <p class="caption">신기하죠? 번호표 카운터 2개와 똑같은 수학이에요. 벨트냐 전광판이냐의 차이! 🔁</p>
+  <div class="grownup"><b>어른 버전:</b> 이벤트별 단일 파티션에 모든 예매 요청을 발행 → 컨슈머 1개가 직렬 처리(재고 경합 원천 소멸, 원자 연산조차 불필요). <b>순번 = 내 메시지 offset − 컨슈머 committed offset</b> — 발행 시 받은 offset을 응답으로 주고, 조회 API가 차이를 계산. 카운터 2개 방식과 수학적으로 동형(next≈producer offset, serving≈committed offset). 장점: 디스크 로그라 요청 유실 없음, 폭주를 벨트가 흡수. 단점: 응답이 비동기 UX(SSE/푸시 필요), 단일 파티션 처리량 한계(수천 TPS — 5만 장엔 충분), 파티션을 늘리면 전역 순서가 깨짐. 2권 4장(분산 메시지 큐) + 6장(스트림 처리) 패턴.</div>
+</div>
+
+<footer>ELI5 · 선착순 티켓 예매 시스템 — 시스템 디자인 면접 준비용</footer>
+</div>
+</body>
+</html>
