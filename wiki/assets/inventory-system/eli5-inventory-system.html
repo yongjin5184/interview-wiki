@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ELI5 · 상품 재고 시스템 설계하는 법</title>
+<style>
+  :root {
+    --ink:#202631; --paper:#f8f6ef; --card:#fff; --muted:#70788a;
+    --orange:#f36b45; --blue:#4a78e8; --green:#249b6b; --yellow:#f4bd32;
+    --purple:#8a61d8; --red:#d74c4c; --line:#dfe3ea; --soft:#f2f4f8;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif; background:var(--paper); color:var(--ink); line-height:1.62; }
+  .wrap { max-width:920px; margin:0 auto; padding:42px 20px 80px; }
+  header { text-align:center; margin-bottom:44px; }
+  header .emoji { font-size:68px; }
+  h1 { margin:8px 0 6px; font-size:34px; line-height:1.3; }
+  header p { margin:0; color:var(--muted); font-size:17px; }
+  .scene { background:var(--card); border-radius:24px; padding:34px 30px; margin-bottom:32px; box-shadow:0 4px 24px rgba(32,38,49,.07); }
+  .step { display:inline-block; padding:4px 14px; margin-bottom:12px; border-radius:999px; background:var(--ink); color:#fff; font-size:13px; font-weight:800; letter-spacing:.05em; }
+  h2 { margin:0 0 6px; font-size:25px; line-height:1.35; }
+  .oneliner { margin:0 0 24px; color:var(--muted); font-size:18px; }
+  .caption { margin:20px 0; text-align:center; font-size:18px; font-weight:800; }
+  .grownup { border-left:4px solid var(--blue); border-radius:10px; background:var(--soft); padding:14px 18px; color:#3d4555; font-size:15px; }
+  .grownup b { color:var(--blue); }
+  code { padding:1px 5px; border-radius:5px; background:#e9edf5; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.92em; }
+  .prompt { padding:24px; border:3px dashed var(--orange); border-radius:18px; background:#fff9f5; text-align:center; font-size:23px; font-weight:800; }
+  .mark { padding:2px 5px; border-radius:7px; }
+  .m-orange { background:#ffe0d6; color:#b53c20; } .m-blue { background:#dfe8ff; color:#2857bd; }
+  .m-green { background:#dff4ea; color:#13744d; } .m-purple { background:#eee5ff; color:#6741b4; }
+  .cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:18px 0; }
+  .card { min-height:130px; border:2px solid var(--line); border-radius:16px; padding:18px; background:#fff; }
+  .card .icon { font-size:32px; } .card h3 { margin:5px 0 4px; font-size:17px; }
+  .card p { margin:0; color:var(--muted); font-size:14px; }
+  .tag { display:inline-block; margin-top:9px; padding:2px 9px; border-radius:999px; background:var(--soft); color:#4d5668; font-size:12px; font-weight:800; }
+  .sort { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; }
+  .bucket { border-radius:16px; padding:18px 15px; min-height:235px; }
+  .bucket h3 { margin:0 0 12px; text-align:center; font-size:17px; }
+  .bucket ul { margin:0; padding-left:21px; font-size:14px; }
+  .bucket li { margin:8px 0; }
+  .functional { background:#e8f6ef; border:2px solid #82cfaa; }
+  .quality { background:#e9efff; border:2px solid #96afea; }
+  .invariant { background:#fff3d7; border:2px solid #e8bc4f; }
+  .formula { max-width:620px; margin:18px auto; padding:16px; border-radius:14px; background:var(--ink); color:#fff; text-align:center; font:700 18px ui-monospace,SFMono-Regular,Menlo,monospace; }
+  .flow { display:flex; align-items:center; justify-content:center; gap:10px; margin:22px 0; flex-wrap:wrap; }
+  .node { min-width:140px; padding:16px 12px; border:3px solid var(--blue); border-radius:15px; background:#eef3ff; text-align:center; font-weight:800; }
+  .node small { display:block; margin-top:4px; color:var(--muted); font-weight:600; }
+  .node.green { border-color:var(--green); background:#e8f7f0; }
+  .node.yellow { border-color:var(--yellow); background:#fff7df; }
+  .node.purple { border-color:var(--purple); background:#f0eaff; }
+  .node.red { border-color:var(--red); background:#ffeded; }
+  .arrow { color:var(--ink); font-size:27px; font-weight:900; }
+  .arrow-label { display:flex; flex-direction:column; align-items:center; min-width:80px; color:var(--muted); font-size:12px; font-weight:800; }
+  .arrow-label span { color:var(--ink); font-size:25px; line-height:1.1; }
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .case { border-radius:16px; padding:18px; border:2px solid var(--line); }
+  .case h3 { margin:0 0 8px; font-size:17px; }
+  .case p { margin:5px 0; font-size:14px; }
+  .ok { background:#e9f8f1; border-color:#8bd1ad; }
+  .stop { background:#fff0ed; border-color:#eea18e; }
+  .number { display:inline-grid; place-items:center; width:28px; height:28px; margin-right:6px; border-radius:50%; background:var(--orange); color:#fff; font-size:14px; font-weight:900; }
+  .layers { display:grid; gap:10px; margin:20px 0; }
+  .layer { display:grid; grid-template-columns:110px 1fr; align-items:center; gap:12px; padding:13px; border:2px solid var(--line); border-radius:14px; }
+  .layer b { text-align:center; }
+  .layer div { color:#4c5566; font-size:14px; }
+  .legend { display:flex; justify-content:center; flex-wrap:wrap; gap:13px; margin:12px 0 2px; color:var(--muted); font-size:12px; font-weight:800; }
+  .dot { display:inline-block; width:10px; height:10px; margin-right:4px; border-radius:50%; }
+  svg { display:block; width:100%; height:auto; margin:10px auto 18px; }
+  svg text { font-family:inherit; }
+  svg .badge circle { fill:var(--orange); stroke:#fff; stroke-width:2; }
+  svg .badge text { fill:#fff; font-size:11px; font-weight:900; text-anchor:middle; }
+  .arrows { margin:14px 0 4px; padding-left:24px; font-size:14px; line-height:1.75; }
+  .arrows li { margin:6px 0; }
+  .arrows li::marker { color:var(--orange); font-weight:900; }
+  .practice { margin:18px 0 0; padding:18px; border:3px dashed #b9bec9; border-radius:16px; background:#fcfcfd; }
+  .practice ol { margin:0; padding-left:26px; }
+  .practice li { margin:8px 0; }
+  footer { margin-top:38px; text-align:center; color:var(--muted); font-size:14px; }
+  @media (max-width:640px) {
+    .wrap { padding:24px 12px 60px; } .scene { padding:25px 17px; border-radius:18px; }
+    h1 { font-size:27px; } h2 { font-size:22px; } .prompt { font-size:19px; padding:18px 12px; }
+    .cards,.split { grid-template-columns:1fr; } .sort { grid-template-columns:1fr; }
+    .bucket { min-height:auto; } .flow { flex-direction:column; } .arrow { transform:rotate(90deg); }
+    .arrow-label span { transform:rotate(90deg); } .layer { grid-template-columns:88px 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="emoji">📦🏪</div>
+  <h1>재고 시스템 설계, 5살처럼 시작하기</h1>
+  <p>문제 한 줄에서 질문을 꺼내고, 질문의 답을 박스와 화살표로 바꾸는 12장</p>
+</header>
+
+<section class="scene">
+  <span class="step">장면 1 · 문제 해체</span>
+  <h2>문제 문장에 이미 질문이 숨어 있어요</h2>
+  <p class="oneliner">바로 Redis를 그리지 말고, 중요한 단어에 먼저 동그라미!</p>
+  <div class="prompt"><span class="mark m-purple">수백만 개</span>의 <span class="mark m-blue">상품</span>을 <span class="mark m-green">관리</span>하는 <span class="mark m-orange">이커머스 재고</span> 시스템을 설계해주세요.</div>
+  <div class="cards">
+    <div class="card"><div class="icon">🔢</div><h3>수백만 개?</h3><p>전체 SKU와 오늘 실제로 조회되는 SKU는 몇 개일까?</p><span class="tag">규모 질문</span></div>
+    <div class="card"><div class="icon">👟</div><h3>상품?</h3><p>신발 모델일까, 검정색 270mm 한 켤레를 뜻할까?</p><span class="tag">재고 단위 질문</span></div>
+    <div class="card"><div class="icon">🔄</div><h3>관리?</h3><p>조회뿐일까, 예약·확정·취소·입고·반품도 할까?</p><span class="tag">기능 범위 질문</span></div>
+    <div class="card"><div class="icon">🛒</div><h3>이커머스 재고?</h3><p>장바구니에 담을 때일까, 주문할 때 실제로 잡을까?</p><span class="tag">정합성 질문</span></div>
+  </div>
+  <p class="caption">명사에는 “정확히 무엇?”, 동사에는 “언제·어떻게?”, 숫자에는 “얼마나 많이?”를 물어요.</p>
+  <div class="grownup"><b>어른 버전:</b> 문제에서 domain entity, operation, scale qualifier를 분리한다. 이때 저장 기술을 고르지 않고 scope와 consistency boundary부터 합의한다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 2 · 네 바구니 질문</span>
+  <h2>질문은 네 종류만 기억해요</h2>
+  <p class="oneliner">모든 걸 묻는 게 아니라, 설계를 바꾸는 답만 받아요.</p>
+  <div class="cards">
+    <div class="card"><div class="icon">🎯</div><h3>① 범위</h3><p>SKU 단위인가요? 주문 시 15분 예약하나요? 입고·반품도 포함하나요?</p></div>
+    <div class="card"><div class="icon">🌊</div><h3>② 규모</h3><p>읽기 QPS, 주문 TPS, 활성 SKU 수, 한 상품에 몰리는 비율은?</p></div>
+    <div class="card"><div class="icon">🛡️</div><h3>③ 정확성</h3><p>초과 판매는 금지인가요? 화면의 품절 표시는 몇 초 늦어도 되나요?</p></div>
+    <div class="card"><div class="icon">🚨</div><h3>④ 장애</h3><p>Redis나 DB가 죽으면 조회와 주문을 각각 계속해야 하나요?</p></div>
+  </div>
+  <div class="formula">범위 + 규모 + 정확성 + 장애 = 설계의 경계</div>
+  <p class="caption">면접관이 답하지 않으면 합리적인 숫자를 가정하고 크게 말해요.</p>
+  <div class="grownup"><b>어른 버전:</b> “SKU 1,000만, 조회 50만 QPS, 쓰기 5만 TPS, 초과 판매 불가, 화면은 수 초 stale 허용, DB 장애 시 write fail-closed로 가정하겠습니다.”처럼 설계 전제를 고정한다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 3 · 요구사항 분류</span>
+  <h2>해야 할 일, 잘해야 할 일, 절대 깨지면 안 될 일</h2>
+  <p class="oneliner">세 바구니에 나누면 기능/비기능 요구사항이 저절로 보여요.</p>
+  <div class="sort">
+    <div class="bucket functional"><h3>🧩 기능 = 동사</h3><ul><li>재고를 조회한다</li><li>주문 수량을 예약한다</li><li>결제하면 확정한다</li><li>취소·만료 시 반환한다</li><li>입고·반품을 반영한다</li></ul></div>
+    <div class="bucket quality"><h3>⚡ 비기능 = 정도</h3><ul><li>조회가 매우 빠르다</li><li>수백만 SKU를 다룬다</li><li>동시 주문을 처리한다</li><li>부분 장애에도 복구한다</li><li>hot SKU를 격리한다</li></ul></div>
+    <div class="bucket invariant"><h3>🔒 불변식 = 약속</h3><ul><li>ATP는 음수가 아니다</li><li>한 요청은 한 번만 차감</li><li>DB 커밋 전 성공 응답 금지</li><li>확정·취소 중 하나만 성공</li><li>변경 원인을 추적한다</li></ul></div>
+  </div>
+  <p class="caption">기능은 박스가 되고, 비기능은 박스의 크기·복제가 되고, 불변식은 쓰기 경로가 돼요.</p>
+  <div class="grownup"><b>어른 버전:</b> functional requirement는 API와 state transition으로, non-functional requirement는 topology·capacity·SLO로, invariant는 transaction boundary와 constraint로 변환한다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 4 · 재고의 뜻</span>
+  <h2>창고에 10개 있어도 10개를 다 팔 수는 없어요</h2>
+  <p class="oneliner">이미 찜한 것과 비상용으로 남긴 것은 빼야 해요.</p>
+  <svg viewBox="0 0 800 250" role="img" aria-label="실재고 10개에서 예약 3개와 안전재고 1개를 빼면 판매 가능 재고 6개가 되는 그림">
+    <rect x="30" y="55" width="190" height="130" rx="18" fill="#e9efff" stroke="#4a78e8" stroke-width="4"/>
+    <text x="125" y="105" font-size="42" text-anchor="middle">📦📦📦</text><text x="125" y="145" font-size="20" font-weight="800" text-anchor="middle">실재고 10</text>
+    <text x="250" y="128" font-size="34" font-weight="900">−</text>
+    <rect x="290" y="55" width="150" height="130" rx="18" fill="#fff3d7" stroke="#f4bd32" stroke-width="4"/>
+    <text x="365" y="105" font-size="38" text-anchor="middle">🛒</text><text x="365" y="145" font-size="19" font-weight="800" text-anchor="middle">예약 3</text>
+    <text x="465" y="128" font-size="34" font-weight="900">−</text>
+    <rect x="505" y="55" width="125" height="130" rx="18" fill="#ffeded" stroke="#d74c4c" stroke-width="4"/>
+    <text x="567" y="105" font-size="38" text-anchor="middle">🧯</text><text x="567" y="145" font-size="18" font-weight="800" text-anchor="middle">안전 1</text>
+    <text x="652" y="128" font-size="34" font-weight="900">=</text>
+    <circle cx="735" cy="120" r="66" fill="#e8f7f0" stroke="#249b6b" stroke-width="5"/><text x="735" y="110" font-size="18" font-weight="800" text-anchor="middle">팔 수 있는</text><text x="735" y="145" font-size="30" font-weight="900" fill="#17704e" text-anchor="middle">6개</text>
+  </svg>
+  <div class="formula">ATP = on_hand − reserved − safety_stock ≥ 0</div>
+  <p class="caption">이 식을 절대 깨지 않게 만드는 곳이 재고 시스템의 심장이에요.</p>
+  <div class="grownup"><b>어른 버전:</b> Product가 아니라 SKU가 차감 단위다. command path의 첫 책임은 <code>ATP &gt;= requested_quantity</code>를 하나의 원자적 연산으로 보장하는 것이다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 5 · 첫 번째 그림</span>
+  <h2>정확한 길 하나부터 그려요</h2>
+  <p class="oneliner">처음부터 거대한 그림을 그리지 말고 “주문 성공” 세 칸만!</p>
+  <div class="flow">
+    <div class="node yellow">🛒 사용자<small>2개 사고 싶어요</small></div><div class="arrow-label"><span>→</span>reserve</div>
+    <div class="node green">💂 Inventory Service<small>규칙을 지키는 문지기</small></div><div class="arrow-label"><span>→</span>조건부 예약</div>
+    <div class="node">📒 Inventory DB<small>진짜 재고 공책</small></div>
+  </div>
+  <div class="formula">UPDATE ... SET reserved = reserved + 2 WHERE ATP ≥ 2</div>
+  <p class="caption">두 명이 동시에 와도 공책의 같은 줄은 한 번씩 처리하고, 남은 수량을 다시 검사해요.</p>
+  <div class="grownup"><b>어른 버전:</b> DB conditional UPDATE가 linearization point다. affected rows=1만 성공이며, 성공 응답은 reservation·movement·outbox가 함께 commit된 뒤 전송한다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 6 · 읽기 길 추가</span>
+  <h2>구경하는 손님은 빠른 전광판을 봐요</h2>
+  <p class="oneliner">공책은 주문할 때 아끼고, 평소 조회는 복사된 숫자판이 대답해요.</p>
+  <div class="flow">
+    <div class="node yellow">👨‍👩‍👧‍👦 많은 사용자<small>재고 있어요?</small></div><div class="arrow">→</div>
+    <div class="node green">🔎 Query API<small>조회 전용</small></div><div class="arrow">→</div>
+    <div class="node red">⚡ Redis<small>빠른 복사본</small></div>
+  </div>
+  <div class="flow"><div class="node red">Redis miss/장애</div><div class="arrow-label"><span>⇢</span>제한해서</div><div class="node">📒 DB Read 경로</div></div>
+  <p class="caption">전광판이 잠깐 늦을 수는 있어도, 실제 주문은 장면 5의 공책에서 다시 확인해요.</p>
+  <div class="grownup"><b>어른 버전:</b> CQRS 성격의 read/write 분리다. Redis는 <code>{atp, status, version}</code> projection이며 stale UI는 허용한다. cache fallback에는 rate limit·request coalescing으로 DB stampede를 막는다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 7 · 동시에 마지막 하나</span>
+  <h2>마지막 장난감은 한 사람만 가져가요</h2>
+  <p class="oneliner">전광판에서 둘 다 “1개”를 봤어도, 공책 문지기는 한 명만 통과시켜요.</p>
+  <div class="split">
+    <div class="case ok"><h3>👧 A의 주문</h3><p>DB가 ATP 1을 확인</p><p><strong>1 → 0, 예약 성공 ✅</strong></p><p>커밋 뒤 성공 응답</p></div>
+    <div class="case stop"><h3>👦 B의 주문</h3><p>A 커밋 뒤 조건을 다시 검사</p><p><strong>ATP 0, affected rows=0 ❌</strong></p><p>OUT_OF_STOCK 응답</p></div>
+  </div>
+  <div class="flow"><div class="node red">Redis DECR/Lua<small>빠른 사전 거절</small></div><div class="arrow-label"><span>≠</span>최종 결정 아님</div><div class="node">DB UPDATE<small>판매 성공의 판정</small></div></div>
+  <p class="caption">빠른 전광판은 안내원, 진짜 공책은 심판이에요.</p>
+  <div class="grownup"><b>어른 버전:</b> Redis atomicity는 한 Redis 안의 경쟁만 해결한다. Redis↔DB partial failure와 failover durability는 해결하지 못하므로 Redis 차감은 admission optimization, DB transaction은 correctness gate로 둔다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 8 · 전광판 갱신</span>
+  <h2>공책과 전광판을 직접 두 번 쓰지 않아요</h2>
+  <p class="oneliner">공책 안에 “전광판도 바꿔주세요” 편지를 같이 넣어요.</p>
+  <div class="flow">
+    <div class="node">📒 DB<small>재고 + Outbox 편지</small></div><div class="arrow-label"><span>→</span>커밋 후 꺼냄</div>
+    <div class="node purple">📮 Event Bus<small>편지를 잃지 않는 벨트</small></div><div class="arrow-label"><span>→</span>version 42</div>
+    <div class="node red">⚡ Redis·화면<small>큰 version만 반영</small></div>
+  </div>
+  <div class="split">
+    <div class="case stop"><h3>위험한 두 번 쓰기</h3><p>DB 성공 → 서버 사망 → Redis 갱신 누락</p><p>두 저장소를 한 번에 commit할 수 없음</p></div>
+    <div class="case ok"><h3>Outbox</h3><p>재고 변경과 편지를 같은 DB transaction에 저장</p><p>중복 편지는 event ID/version으로 무해</p></div>
+  </div>
+  <p class="caption">편지가 조금 늦어도 주문 심판은 DB라서 더 팔리지는 않아요.</p>
+  <div class="grownup"><b>어른 버전:</b> Transactional Outbox가 dual-write gap을 닫는다. 전달은 at-least-once로 가정하고 cache consumer는 aggregate version이 증가할 때만 projection을 갱신한다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 9 · 장애 선택</span>
+  <h2>전광판이 꺼진 것과 공책이 사라진 것은 달라요</h2>
+  <p class="oneliner">무엇이 고장 났는지에 따라 계속할 일과 멈출 일을 나눠요.</p>
+  <div class="split">
+    <div class="case ok"><h3>⚡ Redis가 고장</h3><p>조회: 제한적으로 DB/로컬 캐시 사용</p><p>주문: DB 조건부 예약 계속</p><p><strong>느려지지만 정합성은 유지</strong></p></div>
+    <div class="case stop"><h3>📒 DB quorum이 고장</h3><p>조회: Redis의 마지막 표시 유지 가능</p><p>주문: 새 예약 중단</p><p><strong>팔 수 있는지 모르므로 fail closed</strong></p></div>
+  </div>
+  <div class="formula">정합성 요구사항 ⇒ “모르면 팔지 않는다”</div>
+  <p class="caption">가게 문을 잠깐 닫는 게, 없는 장난감을 두 명에게 약속하는 것보다 안전해요.</p>
+  <div class="grownup"><b>어른 버전:</b> Redis 장애는 degraded read path, DB quorum 장애는 write unavailability로 매핑한다. 동기 replica와 fencing으로 acknowledged commit 유실과 split brain을 막는다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 10 · 대사</span>
+  <h2>밤마다 세 장부를 맞춰보는 회계사가 있어요</h2>
+  <p class="oneliner">숫자가 달라졌다면 어디가 틀렸는지 찾고, 안전한 것만 자동으로 고쳐요.</p>
+  <div class="flow">
+    <div class="node">📒 현재 재고<small>balance</small></div><div class="node yellow">🧾 예약·변경 이력<small>reservation / movement</small></div><div class="node red">⚡ 전광판<small>Redis version</small></div>
+  </div>
+  <div class="flow"><div class="arrow">↓</div><div class="node green">🧮 Reconciliation Worker<small>같은 snapshot/watermark로 비교</small></div><div class="arrow">↓</div></div>
+  <div class="split">
+    <div class="case ok"><h3>Redis만 다르다</h3><p>DB의 더 큰 version으로 자동 재생성</p></div>
+    <div class="case stop"><h3>DB 장부끼리 다르다</h3><p>몰래 덮지 않고 원인을 남긴 보상 movement</p></div>
+  </div>
+  <p class="caption">복사본은 다시 만들고, 진짜 공책은 지우개 대신 정정 기록을 남겨요.</p>
+  <div class="grownup"><b>어른 버전:</b> balance↔active reservation↔movement, inventory↔order, DB version↔Redis projection의 세 층을 대사한다. live traffic과 정상 event lag는 snapshot/LSN/watermark로 분리한다.</div>
+</section>
+
+<section class="scene">
+  <span class="step">장면 11 · 커졌을 때</span>
+  <h2>가게가 많아지는 문제와 한 가게에 몰리는 문제는 달라요</h2>
+  <p class="oneliner">SKU가 많으면 가게를 나누고, 하나만 인기 폭발하면 줄 세우는 법을 바꿔요.</p>
+  <div class="layers">
+    <div class="layer"><b>🏬 일반 SKU</b><div><span class="number">1</span><code>sku_id</code>로 DB·Redis shard — 서로 다른 상품은 병렬 처리</div></div>
+    <div class="layer"><b>🔥 품절 폭주</b><div><span class="number">2</span>Redis admission — 이미 품절인 실패 요청을 DB 전에 차단</div></div>
+    <div class="layer"><b>🎟️ 한정판</b><div><span class="number">3</span>SKU별 durable queue + single writer — 비동기 UX와 교환</div></div>
+    <div class="layer"><b>🌍 멀티 리전</b><div><span class="number">4</span>리전별 quota/escrow — 총량을 선분배해 병렬 차감</div></div>
+  </div>
+  <p class="caption">큰 망치는 마지막에! 측정한 병목에만 복잡한 도구를 써요.</p>
+  <div class="grownup"><b>어른 버전:</b> cardinality scaling과 contention scaling을 분리한다. shard 추가는 수백만 SKU에는 효과적이지만 단일 hot row 처리량은 늘리지 못한다.</div>
+</section>
+
+<section class="scene" id="full-architecture">
+  <span class="step">장면 12 · 완성 그림</span>
+  <h2>이제 다섯 겹을 한 장에 합쳐요</h2>
+  <p class="oneliner">읽기, 정확한 쓰기, 이벤트, 복구, 확장을 색으로 나눠 말하면 끝!</p>
+  <svg viewBox="0 0 860 555" role="img" aria-label="사용자, 조회 API, Redis, 주문 서비스, 재고 서비스, 입고·조정 WMS, 재고 DB, Outbox, 이벤트 버스, 갱신 소비자, 만료와 대사 워커, 확장 레인으로 구성된 전체 재고 시스템 아키텍처">
+    <defs>
+      <marker id="a-blue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#4a78e8"/></marker>
+      <marker id="a-green" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#249b6b"/></marker>
+      <marker id="a-purple" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#8a61d8"/></marker>
+      <marker id="a-orange" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L9,3 L0,6 Z" fill="#f36b45"/></marker>
+    </defs>
+    <rect x="20" y="45" width="130" height="74" rx="14" fill="#fff7df" stroke="#f4bd32" stroke-width="3"/><text x="85" y="77" font-size="25" text-anchor="middle">👨‍👩‍👧‍👦</text><text x="85" y="103" font-size="14" font-weight="800" text-anchor="middle">사용자</text>
+    <rect x="210" y="20" width="155" height="82" rx="14" fill="#e9efff" stroke="#4a78e8" stroke-width="3"/><text x="287" y="54" font-size="22" text-anchor="middle">🔎</text><text x="287" y="80" font-size="14" font-weight="800" text-anchor="middle">Query API</text>
+    <rect x="430" y="20" width="155" height="82" rx="14" fill="#ffeded" stroke="#d74c4c" stroke-width="3"/><text x="507" y="54" font-size="22" text-anchor="middle">⚡</text><text x="507" y="80" font-size="14" font-weight="800" text-anchor="middle">Redis projection</text>
+    <rect x="685" y="20" width="155" height="82" rx="14" fill="#fff7df" stroke="#f4bd32" stroke-width="3"/><text x="762" y="54" font-size="22" text-anchor="middle">🏭</text><text x="762" y="80" font-size="14" font-weight="800" text-anchor="middle">입고·조정 (WMS)</text>
+    <rect x="210" y="155" width="155" height="82" rx="14" fill="#e8f7f0" stroke="#249b6b" stroke-width="3"/><text x="287" y="188" font-size="21" text-anchor="middle">🛒</text><text x="287" y="215" font-size="14" font-weight="800" text-anchor="middle">Order Service</text>
+    <rect x="430" y="155" width="175" height="82" rx="14" fill="#e8f7f0" stroke="#249b6b" stroke-width="4"/><text x="517" y="187" font-size="21" text-anchor="middle">💂</text><text x="517" y="214" font-size="14" font-weight="800" text-anchor="middle">Inventory Command</text>
+    <rect x="685" y="140" width="155" height="126" rx="14" fill="#e9efff" stroke="#4a78e8" stroke-width="4"/><text x="762" y="172" font-size="23" text-anchor="middle">📒</text><text x="762" y="196" font-size="14" font-weight="900" text-anchor="middle">Inventory DB</text><text x="762" y="216" font-size="11" fill="#70788a" text-anchor="middle">balance·reservation</text><text x="762" y="232" font-size="11" fill="#70788a" text-anchor="middle">movement·outbox</text><text x="762" y="250" font-size="11" fill="#2857bd" font-weight="800" text-anchor="middle">sku_id shard · (sku, fc) 풀</text>
+    <rect x="665" y="335" width="175" height="82" rx="14" fill="#f0eaff" stroke="#8a61d8" stroke-width="3"/><text x="752" y="368" font-size="21" text-anchor="middle">📮</text><text x="752" y="395" font-size="14" font-weight="800" text-anchor="middle">Durable Event Bus</text>
+    <rect x="420" y="335" width="180" height="82" rx="14" fill="#f0eaff" stroke="#8a61d8" stroke-width="3"/><text x="510" y="368" font-size="21" text-anchor="middle">🔄</text><text x="510" y="395" font-size="14" font-weight="800" text-anchor="middle">Projection Updater</text>
+    <rect x="35" y="330" width="230" height="94" rx="14" fill="#fff3d7" stroke="#f4bd32" stroke-width="3"/><text x="150" y="365" font-size="23" text-anchor="middle">⏳ 🧮</text><text x="150" y="391" font-size="14" font-weight="800" text-anchor="middle">만료·대사 Worker</text><text x="150" y="411" font-size="11" fill="#70788a" text-anchor="middle">DB 전이·Redis 재구축</text>
+    <rect x="530" y="475" width="310" height="58" rx="13" fill="#fff0ed" stroke="#f36b45" stroke-width="3"/><text x="685" y="497" font-size="13" font-weight="800" text-anchor="middle">🔥 확장 레인 — 측정된 병목에만</text><text x="685" y="518" font-size="11" fill="#b53c20" font-weight="800" text-anchor="middle">hot SKU queue·quota · 물류센터(FC) 할당 · 파티션 이벤트 원장</text>
+
+    <g fill="none" stroke-width="3">
+      <path d="M150 68 L202 58" stroke="#4a78e8" marker-end="url(#a-blue)"/><path d="M365 61 L422 61" stroke="#4a78e8" marker-end="url(#a-blue)"/>
+      <path d="M150 97 C180 120 180 190 202 195" stroke="#249b6b" marker-end="url(#a-green)"/><path d="M365 196 L422 196" stroke="#249b6b" marker-end="url(#a-green)"/><path d="M605 196 L677 196" stroke="#249b6b" marker-end="url(#a-green)"/>
+      <path d="M685 80 C650 80 590 110 560 147" stroke="#249b6b" marker-end="url(#a-green)"/>
+      <path d="M762 266 L752 327" stroke="#8a61d8" marker-end="url(#a-purple)"/><path d="M665 376 L608 376" stroke="#8a61d8" marker-end="url(#a-purple)"/><path d="M445 335 C335 300 335 140 445 102" stroke="#8a61d8" marker-end="url(#a-purple)"/>
+      <path d="M265 377 C360 290 590 300 690 250" stroke="#f36b45" stroke-dasharray="7 5" marker-end="url(#a-orange)"/><path d="M265 392 C340 445 405 445 475 415" stroke="#f36b45" stroke-dasharray="7 5" marker-end="url(#a-orange)"/>
+      <path d="M685 475 C660 430 620 300 575 238" stroke="#f36b45" stroke-dasharray="7 5" marker-end="url(#a-orange)"/>
+    </g>
+    <g font-size="11" font-weight="800">
+      <text x="172" y="49" fill="#4a78e8">조회</text><text x="389" y="49" fill="#4a78e8">GET</text>
+      <text x="155" y="147" fill="#249b6b" text-anchor="middle">주문</text><text x="402" y="160" fill="#249b6b" text-anchor="middle" font-size="10">reserve</text><text x="402" y="172" fill="#249b6b" text-anchor="middle" font-size="10">confirm</text><text x="402" y="184" fill="#249b6b" text-anchor="middle" font-size="10">release</text><text x="402" y="240" fill="#249b6b" text-anchor="middle" font-size="10">멱등키</text><text x="641" y="184" fill="#249b6b" text-anchor="middle">조건부 UPDATE</text>
+      <text x="598" y="132" fill="#249b6b">RECEIVE / ADJUST</text>
+      <text x="770" y="300" fill="#8a61d8">outbox</text><text x="620" y="364" fill="#8a61d8">consume</text><text x="372" y="290" fill="#8a61d8" text-anchor="end">version 갱신</text>
+      <text x="484" y="282" fill="#f36b45">만료 반환·대사</text><text x="371" y="462" fill="#f36b45" text-anchor="middle">Redis 재구축</text>
+    </g>
+    <!-- 화살표 번호표: 아래 리스트와 1:1 -->
+    <g class="badge">
+      <circle cx="180" cy="84" r="10"/><text x="180" y="88">1</text>
+      <circle cx="393" cy="80" r="10"/><text x="393" y="84">2</text>
+      <circle cx="155" cy="165" r="10"/><text x="155" y="169">3</text>
+      <circle cx="393" cy="214" r="10"/><text x="393" y="218">4</text>
+      <circle cx="641" cy="214" r="10"/><text x="641" y="218">5</text>
+      <circle cx="612" cy="84" r="10"/><text x="612" y="88">6</text>
+      <circle cx="740" cy="296" r="10"/><text x="740" y="300">7</text>
+      <circle cx="636" cy="394" r="10"/><text x="636" y="398">8</text>
+      <circle cx="352" cy="263" r="10"/><text x="352" y="267">9</text>
+      <circle cx="470" cy="278" r="10"/><text x="470" y="282">10</text>
+      <circle cx="371" cy="415" r="10"/><text x="371" y="419">11</text>
+      <circle cx="652" cy="448" r="10"/><text x="652" y="452">12</text>
+    </g>
+  </svg>
+  <div class="legend"><span><i class="dot" style="background:#4a78e8"></i>읽기</span><span><i class="dot" style="background:#249b6b"></i>정확한 쓰기</span><span><i class="dot" style="background:#8a61d8"></i>이벤트</span><span><i class="dot" style="background:#f36b45"></i>복구·확장</span></div>
+  <ol class="arrows">
+    <li><b>조회</b> — 사용자가 Query API에 “재고 있어요?”를 묻는다. 주문과 완전히 분리된 읽기 전용 길</li>
+    <li><b>GET</b> — Query API가 Redis projection <code>{atp, status, version}</code>을 읽는다. miss·장애 시에는 rate limit을 걸고 DB read로 제한 fallback</li>
+    <li><b>주문</b> — 사용자가 Order Service에 주문을 넣는다. 화면에서 본 재고 숫자는 참고일 뿐, 여기서는 아무것도 판정하지 않는다</li>
+    <li><b>reserve / confirm / release</b> — Order Service가 예약·확정·취소 세 전이를 같은 문지기에게 요청한다. <code>order_id + sku_id</code>가 멱등키라 재시도해도 한 번만 차감되고, 확정·취소는 <code>WHERE status='RESERVED'</code> 조건부 전이라 둘 중 하나만 성공</li>
+    <li><b>조건부 UPDATE</b> — Inventory Command가 <code>WHERE ATP ≥ qty</code>로 예약을 시도한다. affected rows=1만 성공이고, reservation·movement·outbox를 같은 트랜잭션에 커밋한 뒤에만 성공 응답</li>
+    <li><b>RECEIVE / ADJUST</b> — 입고·반품·관리자 조정도 같은 Inventory Command를 통과해 같은 원장에 movement로 남는다. 공급 측이라고 DB를 직접 고치지 않는다</li>
+    <li><b>outbox</b> — 커밋된 outbox 행을 relay가 꺼내 Event Bus에 발행한다. DB에 없는 변경은 나가지 않고, 커밋된 변경은 반드시 나간다 (at-least-once)</li>
+    <li><b>consume</b> — Projection Updater가 이벤트를 소비한다. 같은 편지가 두 번 와도 무해하도록 설계</li>
+    <li><b>version 갱신</b> — Redis에 저장된 version보다 큰 이벤트만 반영한다. 순서가 뒤바뀌거나 중복돼도 전광판이 과거로 돌아가지 않는다</li>
+    <li><b>만료 반환·대사</b> — Worker가 만료된 예약을 DB 상태 전이로 반환하고, balance↔reservation↔movement 장부를 맞춰본다. 차이는 덮어쓰지 않고 보상 movement로 기록</li>
+    <li><b>Redis 재구축</b> — Worker가 DB 기준으로 projection을 다시 만들라고 Projection Updater에 시킨다. Redis 장애·유실 뒤 돌아오는 길</li>
+    <li><b>확장 레인</b> — 측정된 병목에만 연다. hot SKU는 durable queue + single writer나 quota, 멀티 창고는 물류센터(FC, fulfillment center)마다 재고를 따로 세는 (sku, fc) 풀과 어느 센터에서 출고할지 고르는 할당 단계, 한 행의 한계를 넘으면 파티션별 이벤트 원장. 일반 SKU는 <code>sku_id</code> shard로 충분</li>
+  </ol>
+  <div class="practice">
+    <ol>
+      <li><b>초록색</b>으로 사용자 → Command → DB를 그리고 조건부 예약을 쓴다. 입고·조정(WMS)도 같은 Command로 들어오게 잇는다.</li>
+      <li><b>파란색</b>으로 Query → Redis를 추가하고 cache miss만 DB에 잇는다.</li>
+      <li><b>보라색</b>으로 DB Outbox → Event Bus → Redis/UI 갱신을 잇는다.</li>
+      <li><b>주황색 점선</b>으로 만료·대사·재구축이라는 돌아오는 길을 그린다.</li>
+      <li>마지막에만 확장 레인 박스를 가리킨다. hot SKU·FC 할당·파티션 원장은 꼬리 질문이 올 때 말로 푼다.</li>
+    </ol>
+  </div>
+  <p class="caption">백지에서 이 순서로 세 번 그리면, 완성 그림을 외우지 않아도 다시 만들 수 있어요.</p>
+  <div class="grownup"><b>면접 답변 순서:</b> 요구사항 질문 → 불변식 → 최소 write path → read cache → outbox/eventual consistency → 장애와 대사 → 측정된 병목의 확장. 각 화살표에는 기술 이름보다 <b>무슨 동작을 하고 어떤 보장을 주는지</b>를 적는다.</div>
+</section>
+
+<footer>ELI5 · 상품 재고 시스템 — 문제 한 줄에서 L6 아키텍처까지</footer>
+</div>
+</body>
+</html>
