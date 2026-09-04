@@ -2,7 +2,7 @@
 type: System Design
 title: 대규모 이커머스 재고 시스템
 description: 수백만 SKU의 조회 폭주와 동시 주문을 처리하는 DB 조건부 예약, Redis projection, Outbox/CDC, 장애 격리·재고 대사 설계
-timestamp: 2026-09-04T14:38:28+09:00
+timestamp: 2026-09-04T20:01:01+09:00
 tags: [inventory, redis, concurrency, outbox, reconciliation, consistency]
 books:
   - "Alex Xu 2권 7장 (호텔 예약) — 재고 예약·중복 예약 방지·동시성 제어"
@@ -14,7 +14,7 @@ books:
 
 # 대규모 이커머스 재고 시스템
 
-시각 자료: [문제 해체부터 전체 아키텍처까지 ELI5 그림 12장](/wiki/assets/inventory-system/eli5-inventory-system.html) (브라우저로 열기)
+시각 자료: [문제 해체부터 전체 아키텍처까지 ELI5 그림 12장 + 대안 그림(Redis 선차감·write-behind) 1장](/wiki/assets/inventory-system/eli5-inventory-system.html) (브라우저로 열기)
 
 > 면접의 핵심은 “Redis에서 숫자를 빨리 줄이는 법”이 아니다. **어떤 값이 판매 가능 여부를 최종 결정하고, 부분 장애·재시도·이벤트 중복에서도 어떤 불변식을 지킬 것인가**를 설명하는 문제다.
 
