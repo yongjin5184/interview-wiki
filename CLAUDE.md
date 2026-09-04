@@ -75,6 +75,7 @@ raw/                      # 원본 스냅샷
 - 파일명·디렉토리명 = 영어 kebab-case (한글 파일명 금지 — macOS NFD 자소분리로 git 오염). 제목·본문은 한국어
 - 번들 내부 링크는 루트 절대 경로 마크다운 링크: `[선착순 티켓 예매](/wiki/system-design/ticket-booking.md)`. `[[wikilink]]` 금지
 - 링크 텍스트는 한국어 제목. 관계의 의미는 링크가 아니라 둘러싼 문장으로 표현
+- GitHub Pages 배포 시 `.github/scripts/build_site.py`가 루트 절대 링크에 base 경로를 붙이고 `.md`를 `.html`로 바꾼다. 본문의 링크 규약은 바꾸지 않는다
 
 ## 6. 예약 파일 불변식 (index.md / log.md)
 
@@ -97,7 +98,7 @@ raw/                      # 원본 스냅샷
 
 - **저장 금지**: 현 직장의 내부 정보·대외비(코드, 지표, 고객사명), 시크릿, 타인 개인정보
 - 면접 복기에 면접관 실명 대신 역할만 기록 ("백엔드 리드")
-- 이 저장소는 **개인 private repo**. 외부 공개 금지
+- 이 저장소는 **public repo**이며 GitHub Pages(`https://yongjin5184.github.io/interview-wiki/`)로 공개 배포된다 (2026-09-04 사용자 결정으로 private → public 전환). 따라서 위 저장 금지 항목은 "커밋하면 곧 공개"라는 전제로 더 엄격히 지킨다. 회사·면접관 등 제3자를 식별할 수 있는 정보는 공개 자료에 있는 것만 적는다
 
 ## 9. 하지 말 것
 

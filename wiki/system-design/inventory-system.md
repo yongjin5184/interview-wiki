@@ -14,7 +14,7 @@ books:
 
 # 대규모 이커머스 재고 시스템
 
-시각 자료: [문제 해체부터 전체 아키텍처까지 ELI5 그림 12장 + 대안 그림(Redis 선차감·write-behind) 1장](/wiki/assets/inventory-system/eli5-inventory-system.html) (브라우저로 열기). GitHub은 HTML을 렌더링하지 않으므로 아래 이미지는 같은 HTML을 캡처한 정적 스냅샷이다. HTML을 수정하면 같은 작업에서 다시 캡처한다.
+시각 자료: [문제 해체부터 전체 아키텍처까지 ELI5 그림 12장 + 대안 그림(Redis 선차감·write-behind) 1장](/wiki/assets/inventory-system/eli5-inventory-system.html) (GitHub Pages 배포 사이트나 로컬 브라우저에서 열면 그대로 렌더링된다). GitHub 저장소 화면은 HTML을 렌더링하지 않으므로 아래 이미지는 같은 HTML을 캡처한 정적 스냅샷이다. HTML을 수정하면 같은 작업에서 다시 캡처한다.
 
 ### 완성 그림 (장면 12)
 
@@ -24,7 +24,7 @@ books:
 
 ![장면 13 대안 그림: Redis 선차감 후 Kafka로 DB에 사후 반영하는 구조와 약점 A~D](/wiki/assets/inventory-system/scene-13-alt-architecture.png)
 
-<details>
+<details markdown="1">
 <summary>ELI5 전체 13장면 한 장으로 보기</summary>
 
 ![ELI5 전체 페이지 캡처](/wiki/assets/inventory-system/eli5-inventory-system-full.png)
